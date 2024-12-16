@@ -1,0 +1,12 @@
+dxcam
+Flask
+Flask_Login
+Flask_SocketIO
+keyboard
+opencv_contrib_python
+opencv_python
+psutil
+PyAudio
+python_engineio
+pywin32
+Werkzeug

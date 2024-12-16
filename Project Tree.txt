@@ -1,0 +1,34 @@
+project/
+├── config/
+│   ├── __init__.py
+│   ├── auth_config.py        # Authentication configuration
+│   └── server_config.py      # Server configuration (secrets, etc.)
+├── core/
+│   ├── __init__.py
+│   ├── remote_control.py     # RemoteControlServer class
+│   ├── stream_manager.py     # StreamManager class
+│   ├── audio_manager.py      # AudioManager class
+│   └── mouse_controller.py   # My existing mouse_controller.py
+├── routes/
+│   ├── __init__.py
+│   ├── auth_routes.py        # Login/logout routes
+│   ├── stream_routes.py      # Streaming related routes
+│   ├── system_routes.py      # System info and shell routes
+│   ├── input_routes.py       # Keyboard/mouse input routes
+│   └── file_routes.py        # File management routes
+├── services/
+│   ├── __init__.py
+│   ├── system_service.py     # System information functions
+│   └── file_service.py       # File operations functions
+├── events/
+│   ├── __init__.py
+│   ├── connection_events.py  # Socket connection events
+│   ├── audio_events.py       # Audio-related socket events
+│   └── input_events.py       # Mouse/keyboard socket events
+├── utils/
+│   ├── __init__.py
+│   └── helpers.py           # Common utility functions
+├── static/                  # My static files (audio-worklet-processor.js, input.css, ./css/tailwind)
+├── templates/               # My template files (index.html, login.html)
+├── app.py                   # Main application setup
+└── server.py                # Main entry point

@@ -1,4 +1,3 @@
-# from engineio.async_drivers import threading
 from app import create_app
 import sys
 from utils.helpers import get_local_ip

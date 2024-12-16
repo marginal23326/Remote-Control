@@ -7,67 +7,52 @@ This project is a real-time remote control web application built using Flask and
 
 ## Features
 
-*   **Real-time Screen Streaming:**  Stream the remote desktop with adjustable quality, resolution, and target FPS. Uses DXCam for optimized screen capture on Windows.
-*   **Bi-directional Audio:**
-    *   **Server-to-Client:** Stream system audio or microphone input from the server to the client.
-    *   **Client-to-Server:** Stream audio from the client's microphone to the server.
-*   **Remote Input Control:**
-    *   Full mouse control (move, click, scroll) with a synchronized cursor overlay for accurate visual feedback.
-    *   Keyboard input (send text, shortcuts, and custom key combinations).
-*   **File Management:**
-    *   Browse files and folders.
-    *   Upload files (with drag-and-drop support).
-    *   Download files.
-    *   Delete files and folders.
-    *   Create new folders.
-    *   Rename files and folders.
+**Real-time Screen Streaming:**  Stream the remote desktop with adjustable quality, resolution, and target FPS. Uses DXCam for optimized screen capture on Windows.
+
+### 🔊 Audio Management
+
+**Server-to-Client:** Stream system audio or microphone input from the server to the client.
+
+**Client-to-Server:** Stream audio from the client's microphone to the server.
+
+### 🖱️ Input Control
+
+ *   Full mouse control (move, click, scroll) with a synchronized cursor overlay for accurate visual feedback.
+ *   Keyboard input (send text, shortcuts, and custom key combinations).
+	
+	
+### 📁 File Operations
+ *   Browse files and folders.
+ *   Upload files (with drag-and-drop support).
+ *   Download files.
+ *   Delete files and folders.
+ *   Create new folders.
+ *   Rename files and folders.
+	
+### 💻 Additional Features
 *   **Shell Access:** Execute commands on the server and view the output in real-time.
 *   **System Information:** Display detailed system information of the remote machine (CPU, memory, disk, network, etc.).
 *   **Secure Authentication:** Uses Flask-Login to protect the application with username/password authentication.
 *   **Modern and Responsive UI:** Built with Tailwind CSS, providing a clean, user-friendly interface that adapts to different screen sizes.
 
-## Project Structure
-
-The project is organized in the following ways:
+## 🌳 Project Structure
 
 ```
-├── server.py
-├── app.py
-├── extensions.py
-├── config/
-│   ├── auth_config.py
-│   └── server_config.py
-├── core/
-│   ├── audio_manager.py
-│   ├── mouse_controller.py
-│   ├── remote_control.py
-│   └── stream_manager.py
-├── events/
-│   ├── audio_events.py
-│   ├── connection_events.py
-│   └── input_events.py
-├── routes/
-│   ├── auth_routes.py
-│   ├── file_routes.py
-│   ├── input_routes.py
-│   ├── stream_routes.py
-│   └── system_routes.py
-├── services/
-│   ├── file_service.py
-│   └── system_service.py
-├── static/
-│   ├── audio-worklet-processor.js
-│   ├── input.css
-│   └── css/
-│       └── tailwind.css
-├── templates/
-│   ├── index.html
-│   └── login.html
-└── utils/
-    └── helpers.py
+Remote-Control/
+├── server.py                # Main server entry
+├── app.py                   # Flask application
+├── extensions.py            # Flask extensions
+├── config/                  # Configuration files
+├── core/                    # Core functionality
+├── events/                  # Socket.IO events
+├── routes/                  # HTTP routes
+├── services/               # Business logic
+├── static/                 # Frontend assets
+├── templates/              # HTML templates
+└── utils/                  # Helper functions
 ```
 
-## Installation
+## 🛠️ Installation
 
 1. **Clone the repository:**
 
@@ -82,21 +67,16 @@ The project is organized in the following ways:
     pip install -r requirements.txt
     ```
 
-3. **Install Node.js dependencies (for Tailwind CSS):**
 
-    ```bash
-    npm install
-    ```
-
-4. **Configure Authentication:**
-
-    *   Update `config/auth_config.py` with your desired username and password.
-
-5. **Compile Tailwind CSS:**
-    ```bash
-    npx tailwindcss -i ./static/input.css -o ./static/css/tailwind.css --watch
-    ```
-    (The `--watch` flag will automatically recompile CSS on changes during development)
+4. **Configure Authentication**
+*   Update `config/auth_config.py` with your desired username and password.
+   ```python
+   # config/auth_config.py
+	USER_CONFIG = {
+		'username': 'admin',
+		'password_hash': generate_password_hash('password')
+	}
+   ```
 
 ## Usage
 
@@ -114,7 +94,11 @@ The project is organized in the following ways:
     ```
 
     (Replace `<server-ip>` with the server's IP address and `<port>` with the port you specified.)
-   Example: http://192.168.1.100:5000 (Replace 192.168.1.100 with your server's IP and 5000 with your desired port)
+	
+3. **Access Application** (example)
+   ```
+   http://192.168.1.100:5000  # Replace '192.168.1.100' with your server's IP
+   ```
 
 ## Building an Executable (Optional)
 
@@ -132,7 +116,15 @@ You can use the provided `build_exe.bat` script (which uses PyInstaller) to crea
     build_exe.bat
     ```
 
-    This will typically create an executable file inside the `dist` folder. You can safely delete the 'build' folder and the 'server.spec' file.
+    This will typically create an executable file inside the `dist` folder. You can safely delete the `build` folder and the `server.spec` file.
+
+## Only for development
+
+1. **Compile Tailwind CSS:**
+    ```bash
+    npm run build-css
+    ```
+    (Always run this first before starting the server if you make any changes to the Tailwind CSS in /templates/index.html or /templates/login.html)
 
 ## Important Notes
 

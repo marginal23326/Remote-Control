@@ -1,108 +1,115 @@
-# Remote Control Web Application
+# Remote Control Web Application 🖥️
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marginal23326/Remote-Control/blob/master/LICENSE)
-[![Python version](https://img.shields.io/badge/python-3.13.1-blue)](https://www.python.org/downloads/)
+[![Python version](https://img.shields.io/badge/python-3.13+-blue)](https://www.python.org/downloads/)
 
-This project is a real-time remote control web application built using Flask and Socket.IO. It allows you to control a Windows machine over your local network through a modern web browser.
+A real-time remote control web application built with Flask and Socket.IO that enables seamless control of Windows machines through your web browser. Perfect for remote administration, support, and management across your local network.
 
-## Features
+## ✨ Key Features
 
-**Real-time Screen Streaming:**  Stream the remote desktop with adjustable quality, resolution, and target FPS. Uses DXCam for optimized screen capture on Windows.
+### 🎥 Real-time Screen Streaming
+- High-performance desktop streaming with configurable quality, resolution, and FPS
+- Powered by DXCam for best screen capture performance on Windows
 
-### 🔊 Audio Management
+### 🔊 Advanced Audio Control
+- **Server → Client**: Stream system audio or microphone input
+- **Client → Server**: Transmit microphone audio with real-time processing
+- Configurable audio sample rate settings
 
-**Server-to-Client:** Stream system audio or microphone input from the server to the client.
+### 🖱️ Precise Input Control
+- Full mouse control (move, click, scroll) with a synchronized cursor overlay for accurate visual feedback.
+- Full keyboard input support (send text, shortcuts, and custom key combinations).
 
-**Client-to-Server:** Stream audio from the client's microphone to the server.
+### 📁 File Management
+- Browse files and folders.
+- Upload files (with drag-and-drop support).
+- Download files.
+- Delete files and folders.
+- Create new folders.
+- Rename files and folders.
 
-### 🖱️ Input Control
-
- *   Full mouse control (move, click, scroll) with a synchronized cursor overlay for accurate visual feedback.
- *   Keyboard input (send text, shortcuts, and custom key combinations).
-	
-	
-### 📁 File Operations
- *   Browse files and folders.
- *   Upload files (with drag-and-drop support).
- *   Download files.
- *   Delete files and folders.
- *   Create new folders.
- *   Rename files and folders.
-	
-### 💻 Additional Features
-*   **Shell Access:** Execute commands on the server and view the output in real-time.
-*   **System Information:** Display detailed system information of the remote machine (CPU, memory, disk, network, etc.).
-*   **Secure Authentication:** Uses Flask-Login to protect the application with username/password authentication.
-*   **Modern and Responsive UI:** Built with Tailwind CSS, providing a clean, user-friendly interface that adapts to different screen sizes.
+### 💻 Power User Features
+- **Interactive Shell**: Real-time command execution with live output
+- **System Information:** Display detailed system information of the remote machine (CPU, memory, disk, network, etc.).
+- **Security**: Role-based authentication with session management
+- **Responsive Design**: Tailwind CSS-powered interface that works on any device
 
 ## 🌳 Project Structure
 
 ```
 Remote-Control/
-├── server.py                # Main server entry
-├── app.py                   # Flask application
-├── extensions.py            # Flask extensions
-├── config/                  # Configuration files
-├── core/                    # Core functionality
-├── events/                  # Socket.IO events
-├── routes/                  # HTTP routes
-├── services/               # Business logic
-├── static/                 # Frontend assets
-├── templates/              # HTML templates
-└── utils/                  # Helper functions
+├── app.py                   # Main application setup
+├── server.py               # Main entry point
+├── config/                # Configuration files
+│   ├── auth_config.py    # Authentication settings
+│   └── server_config.py  # Server configuration
+├── core/                 # Core functionality
+│   ├── remote_control.py    # Main remote control logic
+│   ├── stream_manager.py    # Screen streaming management
+│   ├── audio_manager.py     # Audio streaming handling
+│   └── mouse_controller.py  # Mouse input processing
+├── routes/               # HTTP route handlers
+│   ├── auth_routes.py      # Authentication endpoints
+│   ├── stream_routes.py    # Streaming endpoints
+│   ├── system_routes.py    # System information
+│   ├── input_routes.py     # Input handling
+│   └── file_routes.py      # File operations
+├── services/            # Business logic layer
+│   ├── system_service.py   # System information
+│   └── file_service.py     # File operations
+├── events/              # Socket.IO event handlers
+│   ├── connection_events.py # Connection management
+│   ├── audio_events.py     # Audio streaming
+│   └── input_events.py     # Input processing
+├── utils/              # Helper functions
+├── static/             # Frontend assets
+└── templates/          # HTML templates
 ```
 
-## 🛠️ Installation
+## 🚀 Quick Start Guide
 
-1. **Clone the repository:**
+### 1. Installation
 
-    ```bash
-    git clone https://github.com/marginal23326/remote-Control.git
-    cd Remote-Control
-    ```
+```bash
+# Clone the repository
+git clone https://github.com/marginal23326/Remote-Control.git
+cd Remote-Control
 
-2. **Install Python dependencies:**
+# Install dependencies
+pip install -r requirements.txt
+```
 
-    ```bash
-    pip install -r requirements.txt
-    ```
+### 3. Launch the Application
 
+```bash
+python server.py <port>
+```
+_(Replace `<port>` with your desired port number, e.g., 5000)_
 
-4. **Configure Authentication**
-*   Update `config/auth_config.py` with your desired username and password.
-   ```python
-   # config/auth_config.py
-	USER_CONFIG = {
-		'username': 'admin',
-		'password_hash': generate_password_hash('password')
-	}
-   ```
+### 4. Access the Interface
 
-## Usage
+Open your browser and navigate to:
+```
+http://[server-ip]:5000
+```
 
-1. **Start the Flask development server:**
+Example:
+```
+http://192.168.1.100:5000
+```
 
-    ```bash
-    python server.py <port>
-    ```
-    (Replace `<port>` with your desired port number, e.g., 5000)
+## 🔧 Configuration
 
-2. **Access the application in your web browser:**
+### Authentication
+*  Make sure to update `config/auth_config.py` with your desired username and password.
+```python
+USER_CONFIG = {
+	'username': 'admin',
+	'password_hash': generate_password_hash('password')
+}
+```
 
-    ```
-    http://<server-ip>:<port>
-    ```
-
-    (Replace `<server-ip>` with the server's IP address and `<port>` with the port you specified.)
-	
-3. **Access Application** (example)
-   ```
-   http://192.168.1.100:5000  # Replace '192.168.1.100' with your server's IP
-   ```
-
-## Building an Executable (Optional)
-
-You can use the provided `build_exe.bat` script (which uses PyInstaller) to create a standalone executable for the server. This allows you to run the server without needing to install Python and all the dependencies on the target machine.
+## 📦 Building an Executable (Optional)
 
 1. **Install PyInstaller:**
 
@@ -115,25 +122,15 @@ You can use the provided `build_exe.bat` script (which uses PyInstaller) to crea
     ```bash
     build_exe.bat
     ```
+The compiled executable will be available in the `dist` directory.
 
-    This will typically create an executable file inside the `dist` folder. You can safely delete the `build` folder and the `server.spec` file.
+## ⚠️ Important Notes
 
-## Only for development
+- **Security**: This application is designed for trusted networks. Be **_very_** **cautious** about exposing it directly to the Internet; only use it on your trusted **local network**.
+- **Windows 10/11 Only**: Server-side functionality requires Windows due to system-specific dependencies.
+- **Permissions**: Administrator privilege is required for access certain restricted folders in the file browser; everything else don't require it.
+- **Default Credentials**: Change the default username (`admin`) and password (`password`) before deployment.
 
-1. **Compile Tailwind CSS:**
-    ```bash
-    npm run build-css
-    ```
-    (Always run this first before starting the server if you make any changes to the Tailwind CSS in /templates/index.html or /templates/login.html)
-
-## Important Notes
-
-*   **Security:** This application is intended for use on trusted networks. Be very cautious about exposing it directly to the internet without additional security measures
-*   **Windows Only:** The server-side code is currently designed for Windows due to its reliance on Windows-specific libraries (DXCam, `win32gui`, etc.).
-*   **Permissions:** Ensure the user account running the server has the necessary permissions (Administrator privilege) to access certain folders.
-*   **Error Handling:** While the application includes error handling, there might be edge cases or unexpected situations that could cause issues.
-*   **Username and Password:** Update the default username("admin") and password ("password") in `config/auth_config.py` with your desired one.
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

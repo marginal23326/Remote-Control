@@ -114,7 +114,7 @@ The project is organized in the following ways:
     ```
 
     (Replace `<server-ip>` with the server's IP address and `<port>` with the port you specified.)
-	Example: http://192.168.1.100:5000 (Replace 192.168.1.100 with your server's IP and 5000 with your desired port)
+   Example: http://192.168.1.100:5000 (Replace 192.168.1.100 with your server's IP and 5000 with your desired port)
 
 ## Building an Executable (Optional)
 

@@ -1,5 +1,4 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask
 from flask_login import LoginManager, UserMixin
 from config.server_config import Config
 from config.auth_config import USER_CONFIG

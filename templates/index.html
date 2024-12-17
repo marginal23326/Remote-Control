@@ -239,6 +239,10 @@
             margin-bottom: 1rem;
         }
 
+        .transition-colors {
+            transition: background-color 0.3s ease-out;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -1681,11 +1685,14 @@
         };
 
         // Common CSS classes
+        let currentFileList = [];
+
         const CLASSES = {
-            row: ['cursor-pointer', 'hover:bg-gray-700/50'],
+            row: ['cursor-pointer', 'hover:bg-gray-700/50', 'transition-colors', 'duration-300'],
             cell: ['px-4', 'py-2'],
             noAccess: ['opacity-50', 'cursor-not-allowed'],
-            selected: 'bg-blue-500/50'
+            selected: 'bg-blue-500/50',
+            highlight: 'bg-yellow-400/30'
         };
 
         // Utility class to manage button loading states
@@ -1815,9 +1822,12 @@
             return path.substring(0, path.lastIndexOf('\\')) + '\\';
         }
 
-        function createTableRow(classes = []) {
+        function createTableRow(item, classes = []) {
             const row = document.createElement('tr');
             row.classList.add(...CLASSES.row, ...classes);
+            if (item) {
+                row.dataset.path = item.path;
+            }
             return row;
         }
 
@@ -1871,10 +1881,66 @@
             return row;
         }
 
-        async function listFiles(path) {
+        async function updateFileList(newItems, highlightPath = null) {
+            const fileList = document.getElementById('fileList');
+            const fragment = document.createDocumentFragment();
+            
+            if (currentPath !== '/') {
+                const upRow = createTableRow(null);
+                upRow.addEventListener('click', () => listFiles(getParentPath(currentPath)));
+                upRow.appendChild(createCell(
+                    `<div class="flex items-center gap-2">${SVG_TEMPLATES.upArrow()}..</div>`,
+                    3
+                ));
+                fragment.appendChild(upRow);
+            }
+
+            for (const item of newItems) {
+                const row = createTableRow(item, item.no_access ? CLASSES.noAccess : []);
+
+                row.addEventListener('click', handleItemSelection(row, item));
+                row.addEventListener('dblclick', handleItemDoubleClick(item));
+
+                const nameCell = createCell(createItemNameCell(item));
+                nameCell.classList.add('name-cell');
+                row.appendChild(nameCell);
+
+                if (item.is_dir) {
+                    row.appendChild(createCell('-'));
+                    row.appendChild(createCell('-'));
+                } else {
+                    try {
+                        const stats = await apiCall(`/api/file_info?path=${encodeURIComponent(item.path)}`);
+                        row.appendChild(createCell(formatFileSize(stats.size)));
+                        row.appendChild(createCell(formatDate(stats.last_modified)));
+                    } catch (error) {
+                        row.appendChild(createCell('Error'));
+                        row.appendChild(createCell('Error'));
+                    }
+                }
+
+                if (highlightPath && item.path === highlightPath) {
+                    row.classList.add(CLASSES.highlight);
+                    setTimeout(() => {
+                        row.classList.remove(CLASSES.highlight);
+                    }, 1500);
+                }
+
+                fragment.appendChild(row);
+            }
+
+            fileList.innerHTML = '';
+            fileList.appendChild(fragment);
+            currentFileList = newItems;
+        }
+
+        async function listFiles(path, highlightPath = null) {
             clearSelection();
             const fileList = document.getElementById('fileList');
-            fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">Loading...</td></tr>`;
+            
+            if (path !== currentPath) {
+                fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">Loading...</td></tr>`;
+            }
 
             try {
                 const response = await apiCall(`/api/files?path=${encodeURIComponent(path)}`);
@@ -1882,47 +1948,22 @@
                 if (response.status === 'error') {
                     fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">${response.message}</td></tr>`;
                     if (response.no_access && path !== '/') {
-                        fileList.appendChild(createUpDirectoryRow(path));
+                        const upRow = createTableRow(null);
+                        upRow.addEventListener('click', () => listFiles(getParentPath(path)));
+                        upRow.appendChild(createCell(
+                            `<div class="flex items-center gap-2">${SVG_TEMPLATES.upArrow()}..</div>`,
+                            3
+                        ));
+                        fileList.appendChild(upRow);
                     }
                     return;
                 }
 
-                fileList.innerHTML = '';
                 currentPath = path;
                 document.getElementById('currentPath').textContent = `Current Path: ${currentPath}`;
+                
+                await updateFileList(response, highlightPath);
 
-                if (path !== '/') {
-                    fileList.appendChild(createUpDirectoryRow(currentPath));
-                }
-
-                for (const item of response) {
-                    const row = createTableRow(item.no_access ? CLASSES.noAccess : []);
-
-                    row.addEventListener('click', handleItemSelection(row, item));
-
-                    row.addEventListener('dblclick', handleItemDoubleClick(item));
-
-                    const nameCell = createCell(createItemNameCell(item));
-
-                    nameCell.classList.add('name-cell');
-
-                    if (item.no_access) {
-                        row.classList.add(...CLASSES.noAccess);
-                    }
-
-                    row.appendChild(nameCell);
-
-                    if (item.is_dir) {
-                        row.appendChild(createCell('-'));
-                        row.appendChild(createCell('-'));
-                    } else {
-                        const stats = await apiCall(`/api/file_info?path=${encodeURIComponent(item.path)}`);
-                        row.appendChild(createCell(formatFileSize(stats.size)));
-                        row.appendChild(createCell(formatDate(stats.last_modified)));
-                    }
-
-                    fileList.appendChild(row);
-                }
             } catch (error) {
                 console.error('Error listing files:', error);
                 fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error: ${error.message}</td></tr>`;
@@ -1961,8 +2002,10 @@
                 }
 
                 const formData = new FormData();
+                const uploadedFiles = [];
                 for (let i = 0; i < fileInput.files.length; i++) {
                     formData.append('files', fileInput.files[i]);
+                    uploadedFiles.push(fileInput.files[i].name);
                 }
                 formData.append('path', currentPath);
 
@@ -1973,8 +2016,11 @@
                     });
                     const result = await response.json();
                     if (result.status === 'success') {
-                        alert('File uploaded successfully');
-                        listFiles(currentPath);
+                        const lastFile = uploadedFiles[uploadedFiles.length - 1];
+                        const highlightPath = currentPath.endsWith('\\') ? 
+                            `${currentPath}${lastFile}` : 
+                            `${currentPath}\\${lastFile}`;
+                        await listFiles(currentPath, highlightPath);
                         fileInput.value = '';
                         document.getElementById('selectedFileName').textContent = 'No file chosen';
                     } else {
@@ -2028,8 +2074,10 @@
                 try {
                     const response = await apiCall('/api/create_folder', 'POST', { parentPath: currentPath, folderName });
                     if (response.status === 'success') {
-                        alert('Folder created successfully');
-                        listFiles(currentPath);
+                        const newFolderPath = currentPath.endsWith('\\') ? 
+                            `${currentPath}${folderName}` : 
+                            `${currentPath}\\${folderName}`;
+                        await listFiles(currentPath, newFolderPath);
                         document.getElementById('newFolderName').value = '';
                     } else {
                         alert(response.message);
@@ -2053,8 +2101,10 @@
                 try {
                     const response = await apiCall('/api/rename', 'POST', { oldPath: selectedItemPath, newName });
                     if (response.status === 'success') {
-                        alert('Item renamed successfully');
-                        listFiles(currentPath);
+                        const newPath = currentPath.endsWith('\\') ? 
+                            `${currentPath}${newName}` : 
+                            `${currentPath}\\${newName}`;
+                        await listFiles(currentPath, newPath);
                         document.getElementById('fileOperations').classList.add('hidden');
                         selectedItemPath = null;
                         document.getElementById('renameInput').value = '';

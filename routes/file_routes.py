@@ -2,6 +2,7 @@ import win32api
 from flask import Blueprint, jsonify, request, send_from_directory
 from flask_login import login_required
 from services.file_service import FileService
+from werkzeug.utils import secure_filename
 import os
 import datetime
 

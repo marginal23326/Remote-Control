@@ -1,4 +1,3 @@
-from flask_socketio import emit
 from flask_login import login_required
 
 def register_input_events(socketio, server):

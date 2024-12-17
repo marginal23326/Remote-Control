@@ -3,3 +3,4 @@ config/auth_config.py
 __pycache__/
 *.pyc
 server.exe
+config/auth_config.py

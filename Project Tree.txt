@@ -38,7 +38,9 @@ Remote-Control/
 │   │   │   └── utils.js            # General utility functions (like apiCall)
 │   │   ├── main.js                	# Main initialization and event handling
 │   │   └── audio-worklet-processor.js
-│   └── css/                       	# CSS file (tailwind.css)
+│   └── css/
+│       ├── tailswind.css
+│       └── styles.css
 ├── templates/                       # HTML templates (index.html, login.html)
 ├── app.py                           # Main application setup
 ├── extensions.py                    # SocketIO initialization

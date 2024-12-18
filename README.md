@@ -65,23 +65,23 @@ Remote-Control/
 │   └── input_events.py      # Input processing
 ├── utils/
 │   └── helpers.py
-├── static/
-│   ├── js/
-│   │   ├── modules/
-│   │   │   ├── audio.js            # AudioManager class
-│   │   │   ├── connection.js       # Socket.IO connection management
-│   │   │   ├── dom.js              # DOM manipulation utilities
-│   │   │   ├── file.js             # File management functions
-│   │   │   ├── input.js            # Keyboard and mouse input handling
-│   │   │   ├── stream.js           # Stream setup, control, and UI updates
-│   │   │   ├── system.js           # System information display
-│   │   │   └── utils.js            # General utility functions (like apiCall)
-│   │   ├── main.js                	# Main initialization and event handling
-│   │   └── audio-worklet-processor.js
-│   └── css/
-│       ├── tailswind.css
-│       └── styles.css
-└── templates/               # HTML templates
+├── templates/               # HTML templates
+└── static/
+    ├── js/
+    │   ├── modules/
+    │   │   ├── audio.js            # AudioManager class
+    │   │   ├── connection.js       # Socket.IO connection management
+    │   │   ├── dom.js              # DOM manipulation utilities
+    │   │   ├── file.js             # File management functions
+    │   │   ├── input.js            # Keyboard and mouse input handling
+    │   │   ├── stream.js           # Stream setup, control, and UI updates
+    │   │   ├── system.js           # System information display
+    │   │   └── utils.js            # General utility functions (like apiCall)
+    │   ├── main.js                 # Main initialization and event handling
+    │   └── audio-worklet-processor.js
+    └── css/
+        ├── tailwind.css
+        └── styles.css
 ```
 
 ## 🚀 Quick Start Guide

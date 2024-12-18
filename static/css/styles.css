@@ -1,36 +1,38 @@
 :root {
     --primary-gradient: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-    --secondary-gradient: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    --secondary-gradient: linear-gradient(135deg, #1F2937 0%, #111827 100%)
 }
 
 body {
-    background: #0F172A;
-    background-image: radial-gradient(circle at 50% 50%, #1E293B 0%, #0F172A 100%);
-    min-height: 100vh;
+    background: #0f172a;
+    background-image: radial-gradient(circle at 50% 50%,#1e293b 0,#0f172a 100%);
+    min-height: 100vh
 }
 
-/* Modern scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
+    height: 6px
 }
+
 ::-webkit-scrollbar-track {
-    background: #1E293B;
-    border-radius: 3px;
+    background: #1e293b;
+    border-radius: 3px
 }
+
 ::-webkit-scrollbar-thumb {
-    background: #3B82F6;
-    border-radius: 3px;
+    background: #3b82f6;
+    border-radius: 3px
 }
+
 ::-webkit-scrollbar-thumb:hover {
-    background: #2563EB;
+    background: #2563eb
 }
 
 .glass-card {
-    background: rgba(30, 41, 59, 0.7);
+    background: rgba(30,41,59,.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,.2)
 }
 
 .stream-container {
@@ -41,29 +43,29 @@ body {
     aspect-ratio: 16/9;
     overflow: hidden;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,.3)
 }
 
 .stream-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover
 }
 
 .stream-container.fullscreen {
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 9999 !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
+    width: 100vw!important;
+    height: 100vh!important;
+    max-width: none!important;
+    position: fixed!important;
+    top: 0!important;
+    left: 0!important;
+    z-index: 9999!important;
+    margin: 0!important;
+    border-radius: 0!important;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #000;
+    background-color: #000
 }
 
 .stream-container.fullscreen img {
@@ -72,137 +74,130 @@ body {
     max-width: none;
     max-height: none;
     object-fit: contain;
-    transform: scale(1.001);
+    transform: scale(1.001)
 }
 
 .stream-container .cursor-overlay {
     position: absolute;
     width: 11px;
     height: 16px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0v14l3.5-3L6 16.2l1.9-1-2.7-4.9 4.8-.5z' style='fill:%23fff'/%3E%3C/svg%3E") no-repeat;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0v14l3.5-3L6 16.2l1.9-1-2.7-4.9 4.8-.5z' style='fill:%23fff'/%3E%3C/svg%3E")no-repeat;
     background-size: contain;
     pointer-events: none;
-    z-index: 9998;
+    z-index: 9998
 }
 
 .control-button {
-    transition: all 0.2s ease;
+    transition: all .2s ease;
     position: relative;
-    margin: 0.5rem 0 0.5rem 0;
+    margin: .5rem 0 .5rem 0;
     overflow: hidden;
     white-space: nowrap;
-    font-size: 14px;
+    font-size: 14px
 }
 
 .control-button::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+    background: linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,0));
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity .2s ease
 }
 
 .control-button:hover::after {
-    opacity: 1;
+    opacity: 1
 }
 
 .control-button:active {
-    transform: scale(0.97);
+    transform: scale(.97)
 }
 
-@media (max-width: 640px) {
+@media (max-width:640px) {
     .control-button {
-        padding: 0.5rem !important;
-        font-size: 12px;
-    }
-    
-    .control-button span {
-        display: none;
+        padding: .5rem!important;
+        font-size: 12px
     }
 
+    .control-button span {
+        display: none
+    }
 }
 
 #shellOutput {
     max-height: 300px;
     overflow-y: auto;
-    white-space: pre-wrap;
+    white-space: pre-wrap
 }
 
 .shortcut {
-    transition: all 0.2s ease;
+    transition: all .2s ease;
     min-width: 80px;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    background: rgba(59,130,246,.1);
+    border: 1px solid rgba(59,130,246,.2)
 }
 
 .shortcut:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(59,130,246,.2);
+    border-color: rgba(59,130,246,.3)
 }
 
 .shortcut:active {
-    transform: scale(0.95);
-    background: rgba(59, 130, 246, 0.3);
+    transform: scale(.95);
+    background: rgba(59,130,246,.3)
 }
 
 .accordion-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height .3s cubic-bezier(.4,0,.2,1)
 }
 
 .accordion-content.active {
-    max-height: 1000px;
+    max-height: 1000px
 }
 
-input[type="range"]::-webkit-slider-runnable-track {
-    background: rgba(30, 41, 59, 0.8);
+input[type=range]::-webkit-slider-runnable-track {
+    background: rgba(30,41,59,.8)
 }
 
-input[type="range"]::-moz-range-track {
-    background: rgba(30, 41, 59, 0.8);
+input[type=range]::-moz-range-track {
+    background: rgba(30,41,59,.8)
 }
 
-/* Custom input styling */
-input[type="text"],
-input[type="number"],
-textarea {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    transition: all 0.2s ease;
+input[type=text],input[type=number],textarea {
+    background: rgba(30,41,59,.8);
+    border: 1px solid rgba(59,130,246,.2);
+    transition: all .2s ease
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-textarea:focus {
-    border-color: #3B82F6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+input[type=text]:focus,input[type=number]:focus,textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,.2)
 }
 
-/* Custom checkbox styling */
-input[type="checkbox"] {
+input[type=checkbox] {
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    border: 2px solid rgba(59, 130, 246, 0.4);
+    border: 2px solid rgba(59,130,246,.4);
     appearance: none;
     -webkit-appearance: none;
-    outline: none;
+    outline: 0;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all .2s ease
 }
 
-input[type="checkbox"]:checked {
-    background-color: #3B82F6;
-    border-color: #3B82F6;
+input[type=checkbox]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='18px' height='18px'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
     background-size: 12px;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat
 }
 
 .connection-overlay {
@@ -211,56 +206,69 @@ input[type="checkbox"]:checked {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.95);
+    background-color: rgba(0,0,0,.95);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 10000;
-    color: white;
-    font-size: 1.2rem;
+    color: #fff;
+    font-size: 1.2rem
 }
 
 .spinner {
-    border: 4px solid rgba(255, 255, 255, 0.3);
+    border: 4px solid rgba(255,255,255,.3);
     border-radius: 50%;
-    border-top: 4px solid #3B82F6;
+    border-top: 4px solid #3b82f6;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
+    margin-bottom: 1rem
 }
 
 .transition-colors {
-    transition: background-color 0.3s ease-out;
+    transition: background-color .3s ease-out
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg)
+    }
+
+    to {
+        transform: rotate(360deg)
+    }
 }
 
 .hidden {
-    display: none !important;
+    display: none!important
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: .5
+    }
+
+    to {
+        opacity: 1
+    }
 }
 
 .animate-pulse-custom::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background: #34D399;
-  border-radius: 50%;
-  display: inline-block;
-  animation: pulse 2s infinite;
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: #34d399;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite
 }
 
 .command-history {
-    font-family: 'Fira Code', monospace;
-    line-height: 1.6;
+    font-family: "Fira Code",monospace;
+    line-height: 1.6
 }

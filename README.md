@@ -39,31 +39,49 @@ A real-time remote control web application built with Flask and Socket.IO that e
 ```
 Remote-Control/
 ├── app.py                   # Main application setup
-├── server.py               # Main entry point
-├── config/                # Configuration files
-│   ├── auth_config.py    # Authentication settings
-│   └── server_config.py  # Server configuration
-├── core/                 # Core functionality
+├── server.py                # Main entry point
+├── extensions.py            # Socketio initialization
+├── config/
+│   ├── auth_config.py       # Authentication settings
+│   └── server_config.py     # Server configuration
+├── core/
 │   ├── remote_control.py    # Main remote control logic
 │   ├── stream_manager.py    # Screen streaming management
 │   ├── audio_manager.py     # Audio streaming handling
 │   └── mouse_controller.py  # Mouse input processing
-├── routes/               # HTTP route handlers
-│   ├── auth_routes.py      # Authentication endpoints
-│   ├── stream_routes.py    # Streaming endpoints
-│   ├── system_routes.py    # System information
-│   ├── input_routes.py     # Input handling
-│   └── file_routes.py      # File operations
-├── services/            # Business logic layer
-│   ├── system_service.py   # System information
-│   └── file_service.py     # File operations
-├── events/              # Socket.IO event handlers
+├── routes/
+│   ├── auth_routes.py       # Authentication endpoints
+│   ├── stream_routes.py     # Streaming endpoints
+│   ├── system_routes.py     # System information
+│   ├── input_routes.py      # Input handling
+│   └── file_routes.py       # File operations
+├── services/
+│   ├── system_service.py    # System information
+│   └── file_service.py      # File operations
+├── events/
 │   ├── connection_events.py # Connection management
-│   ├── audio_events.py     # Audio streaming
-│   └── input_events.py     # Input processing
-├── utils/              # Helper functions
-├── static/             # Frontend assets
-└── templates/          # HTML templates
+│   ├── audio_events.py      # Audio streaming
+│   ├── auth_events.py       # Auth socket
+│   └── input_events.py      # Input processing
+├── utils/
+│   └── helpers.py
+├── static/
+│   ├── js/
+│   │   ├── modules/
+│   │   │   ├── audio.js            # AudioManager class
+│   │   │   ├── connection.js       # Socket.IO connection management
+│   │   │   ├── dom.js              # DOM manipulation utilities
+│   │   │   ├── file.js             # File management functions
+│   │   │   ├── input.js            # Keyboard and mouse input handling
+│   │   │   ├── stream.js           # Stream setup, control, and UI updates
+│   │   │   ├── system.js           # System information display
+│   │   │   └── utils.js            # General utility functions (like apiCall)
+│   │   ├── main.js                	# Main initialization and event handling
+│   │   └── audio-worklet-processor.js
+│   └── css/
+│       ├── tailswind.css
+│       └── styles.css
+└── templates/               # HTML templates
 ```
 
 ## 🚀 Quick Start Guide

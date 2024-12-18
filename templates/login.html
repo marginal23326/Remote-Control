@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link href="{{ url_for('static', filename='css/tailwind.css') }}" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.1/tailwind.min.js"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center bg-slate-900 bg-[radial-gradient(circle_at_50%_50%,#1E293B_0%,#0F172A_100%)]">
     <div class="w-11/12 max-w-md p-8 rounded-xl backdrop-blur-lg bg-slate-800/70 border border-white/10 shadow-2xl">
@@ -19,30 +18,18 @@
         
         <form method="POST" class="space-y-6">
             <div class="space-y-2">
-                <input 
-                    type="text" 
-                    name="username" 
-                    placeholder="Username" 
-                    required
-                    autofocus
-                    class="w-full px-4 py-3 rounded-lg bg-black/20 border border-blue-500/30 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200"
-                >
+                <input type="text" name="username" placeholder="Username" requiredautofocus
+                    class="w-full px-4 py-3 rounded-lg bg-black/20 border border-blue-500/30 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200">
             </div>
             
             <div class="space-y-2">
-                <input 
-                    type="password" 
-                    name="password" 
-                    placeholder="Password" 
-                    required
-                    class="w-full px-4 py-3 rounded-lg bg-black/20 border border-blue-500/30 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200"
-                >
+                <input type="password" name="password" placeholder="Password" required
+                    class="w-full px-4 py-3 rounded-lg bg-black/20 border border-blue-500/30 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition duration-200">
             </div>
             
             <button 
                 type="submit"
-                class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800"
-            >
+                class="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800">
                 Login
             </button>
         </form>

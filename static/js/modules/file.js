@@ -4,69 +4,64 @@ import { LoadingButton } from './dom.js';
 class FileManager {
     constructor() {
         this.currentPath = '/';
-        this.selectedItemPath = null;
-        this.selectedItem = null;
+        this.selectedItems = new Set();
         this.currentFileList = [];
-        
-        this.buttons = {
-            download: new LoadingButton('downloadFile', 'Downloading...'),
-            delete: new LoadingButton('deleteItem', 'Deleting...'),
-            rename: new LoadingButton('renameItem', 'Renaming...'),
-            createFolder: new LoadingButton('createFolder', 'Creating...'),
-            upload: new LoadingButton('uploadFile', 'Uploading...')
+        this.lastSelectedItem = null;
+        this.buttons = {};
+        this.dropZone = null;
+    }
+
+    initializeButtons() {
+        const buttonConfigs = {
+            download: 'Downloading...',
+            delete: 'Deleting...',
+            rename: 'Renaming...',
+            createFolder: 'Creating...',
+            upload: 'Uploading...',
+            refresh: 'Refreshing...'
         };
         
-        this.dropZone = new DropZone('dropZone', this.handleFileUpload.bind(this));
+        this.buttons = Object.fromEntries(
+            Object.entries(buttonConfigs)
+                .map(([id, loadingText]) => {
+                    const button = document.getElementById(id);
+                    return button ? [id, new LoadingButton(button, loadingText)] : null;
+                })
+                .filter(Boolean)
+        );
     }
 
     clearSelection() {
-        if (this.selectedItem) {
-            this.selectedItem.classList.remove(CLASSES.selected);
-            this.selectedItem = null;
-            this.selectedItemPath = null;
-        }
-        
-        ['downloadFile', 'deleteItem', 'renameInput', 'renameItem'].forEach(id => {
-            const element = document.getElementById(id);
-            element.disabled = true;
-            if (id === 'renameInput') element.value = '';
-        });
+        this.selectedItems.forEach(item => this.toggleItemSelection(item, false));
+        this.selectedItems.clear();
+        this.lastSelectedItem = null;
     }
 
     async handleFileUpload(files, isDropZone = false) {
-        if (files.length === 0) return;
+        if (!files.length) return;
 
         const formData = new FormData();
-        for (let i = 0; i < files.length; i++) {
-            formData.append('files', files[i]);
-        }
+        Array.from(files).forEach(file => formData.append('files', file));
         formData.append('path', this.currentPath);
 
         if (isDropZone) this.dropZone.setLoading();
 
         try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            if (result.status === 'success') {
+            const response = await apiCall('/api/upload', 'POST', formData);
+            if (response.status === 'success') {
                 const lastFile = files[files.length - 1].name;
-                const highlightPath = this.currentPath.endsWith('\\') ? 
-                    `${this.currentPath}${lastFile}` : 
-                    `${this.currentPath}\\${lastFile}`;
-                    
+                const highlightPath = `${this.currentPath}${this.currentPath.endsWith('\\') ? '' : '\\'}${lastFile}`;
                 await this.listFiles(this.currentPath, highlightPath);
                 
                 if (!isDropZone) {
-                    document.getElementById('fileUpload').value = '';
+                    const fileInput = document.getElementById('fileUpload');
+                    fileInput.value = '';
                     document.getElementById('selectedFileName').textContent = 'No file chosen';
                 }
                 
-                alert(result.message || 'Files uploaded successfully');
+                alert(response.message);
             } else {
-                alert(result.message);
+                alert(response.message);
             }
         } catch (error) {
             console.error('Error uploading files:', error);
@@ -79,10 +74,9 @@ class FileManager {
     async handleApiCall(apiEndpoint, method, data, successCallback) {
         try {
             const response = await apiCall(apiEndpoint, method, data);
-            
             if (response.status === 'success') {
-                if (response.message) alert(response.message);
-                if (successCallback) await successCallback(response);
+                response.message && alert(response.message);
+                successCallback?.(response);
             } else {
                 alert(response.message || 'An error occurred');
             }
@@ -92,45 +86,114 @@ class FileManager {
         }
     }
 
-    createTableRow(item, classes = []) {
+    createTableRow(item, additionalClasses = []) {
         const row = document.createElement('tr');
-        row.classList.add(...CLASSES.row, ...classes);
-        if (item) row.dataset.path = item.path;
+        row.classList.add(...CLASSES.row, ...additionalClasses, CLASSES.defaultHover);
+        
+        if (item) {
+            row.dataset.path = item.path;
+            row.dataset.isDir = item.is_dir.toString();
+        }
+
+        ['mouseover', 'mouseout'].forEach(event => {
+            row.addEventListener(event, () => {
+                row.dataset.hovered = event === 'mouseover';
+                this.updateRowHover(row);
+            });
+        });
+
         return row;
     }
 
     createCell(content, colSpan = 1) {
         const cell = document.createElement('td');
         cell.classList.add(...CLASSES.cell);
-        if (colSpan > 1) cell.colSpan = colSpan;
+        cell.colSpan = colSpan;
         cell.innerHTML = content;
         return cell;
     }
 
-    handleItemSelection = (row, item) => (event) => {
-        const isDirectoryNameCell = event.target.classList.contains('name-cell') && item.is_dir;
-        if (isDirectoryNameCell) return;
+    updateFileOperationsUI() {
+        const selectionCount = this.selectedItems.size;
+        const hasDirectorySelected = Array.from(this.selectedItems).some(item => 
+            item.dataset.isDir === 'true'
+        );
 
-        if (this.selectedItem) {
-            this.selectedItem.classList.remove(CLASSES.selected);
-        }
-        
-        if (this.selectedItem === row) {
-            this.clearSelection();
+        const elements = {
+            operations: document.getElementById('fileOperations'),
+            download: document.getElementById('downloadFile'),
+            delete: document.getElementById('deleteItem'),
+            renameInput: document.getElementById('renameInput'),
+            renameButton: document.getElementById('renameItem')
+        };
+
+        elements.operations.classList.toggle('hidden', !selectionCount);
+        elements.download.disabled = !selectionCount || hasDirectorySelected;
+        elements.delete.disabled = !selectionCount;
+        elements.renameInput.disabled = selectionCount !== 1;
+        elements.renameButton.disabled = selectionCount !== 1;
+
+        if (selectionCount === 1) {
+            elements.renameInput.value = Array.from(this.selectedItems)[0]
+                .querySelector('td:first-child > div').textContent.trim();
         } else {
-            row.classList.add(CLASSES.selected);
-            this.selectedItem = row;
-            this.selectedItemPath = item.path;
-            
-            document.getElementById('fileOperations').classList.remove('hidden');
-            ['downloadFile', 'deleteItem', 'renameInput', 'renameItem'].forEach(id => {
-                const element = document.getElementById(id);
-                element.disabled = false;
-                if (id === 'renameInput') element.value = item.name;
-            });
-
-            document.getElementById('downloadFile').disabled = item.is_dir;
+            elements.renameInput.value = '';
         }
+    }
+
+    toggleItemSelection(row, add) {
+        row.classList.toggle(CLASSES.selected, add);
+        row.classList.toggle(CLASSES.defaultHover, !add);
+        if (add) {
+            this.selectedItems.add(row);
+        } else {
+            row.classList.remove(CLASSES.selectedHover);
+            this.selectedItems.delete(row);
+        }
+        this.updateRowHover(row);
+    }
+
+    handleRangeSelection(row, lastSelectedRow) {
+        const visibleRows = Array.from(document.getElementById('fileList').getElementsByTagName('tr'))
+            .filter(row => row.dataset.path && row.style.display !== 'none');
+
+        const [start, end] = [visibleRows.indexOf(row), visibleRows.indexOf(lastSelectedRow)].sort();
+
+        this.clearSelection();
+        visibleRows.slice(start, end + 1)
+            .filter(row => !row.classList.contains(...CLASSES.noAccess))
+            .forEach(row => this.toggleItemSelection(row, true));
+    }
+
+    handleItemSelection(row, item, event) {
+        if (row.classList.contains(...CLASSES.noAccess)) {
+            return;
+        }
+
+        if (event.shiftKey && this.lastSelectedItem) {
+            this.handleRangeSelection(row, this.lastSelectedItem);
+        } else if (event.ctrlKey || event.metaKey) {
+            this.toggleItemSelection(row, !this.selectedItems.has(row));
+            this.lastSelectedItem = row;
+        } else {
+            const isSingleReselection = this.selectedItems.size === 1 && this.selectedItems.has(row);
+            this.clearSelection();
+            if (!isSingleReselection) {
+                this.toggleItemSelection(row, true);
+                this.lastSelectedItem = row;
+            }
+        }
+
+        this.updateFileOperationsUI();
+    }
+
+    updateRowHover(row) {
+        const isSelected = this.selectedItems.has(row);
+        const isHovered = row.dataset.hovered === 'true';
+
+        row.classList.toggle(CLASSES.defaultHover, !isSelected);
+        row.classList.toggle(CLASSES.selectedHover, isSelected && isHovered);
+        row.classList.toggle(CLASSES.selected, isSelected && !isHovered);
     }
 
     createUpDirectoryRow(path, onClick) {
@@ -143,56 +206,62 @@ class FileManager {
         return upRow;
     }
 
-    async updateFileList(newItems, highlightPath = null) {
-        const fileList = document.getElementById('fileList');
+    async updateFileList(items, highlightPath = null) {
         const fragment = document.createDocumentFragment();
-        
+
         if (this.currentPath !== '/') {
-            const upRow = this.createUpDirectoryRow(
-                this.currentPath,
-                () => this.listFiles(this.getParentPath())
-            );
+            const upRow = this.createUpDirectoryRow(this.currentPath, () => this.listFiles(this.getParentPath()));
             fragment.appendChild(upRow);
         }
 
-        for (const item of newItems) {
+        const createRowPromises = items.map(async (item) => {
             const row = this.createTableRow(item, item.no_access ? CLASSES.noAccess : []);
-            row.addEventListener('click', this.handleItemSelection(row, item));
-            row.addEventListener('dblclick', () => {
-                if (item.is_dir && !item.no_access) {
-                    this.listFiles(item.path);
-                }
-            });
+            
+            row.addEventListener('mousedown', (e) => this.handleItemSelection(row, item, e));
+            if (item.is_dir && !item.no_access) {
+                row.addEventListener('dblclick', () => this.listFiles(item.path));
+            }
 
-            const nameCell = this.createCell(this.createItemNameCell(item));
-            nameCell.classList.add('name-cell');
-            row.appendChild(nameCell);
+            const cells = [this.createItemNameCell(item)];
 
             if (item.is_dir) {
-                row.appendChild(this.createCell('-'));
-                row.appendChild(this.createCell('-'));
+                cells.push('-', '-');
             } else {
                 try {
                     const stats = await apiCall(`/api/file_info?path=${encodeURIComponent(item.path)}`);
-                    row.appendChild(this.createCell(formatFileSize(stats.size)));
-                    row.appendChild(this.createCell(formatDate(stats.last_modified)));
-                } catch (error) {
-                    row.appendChild(this.createCell('Error'));
-                    row.appendChild(this.createCell('Error'));
+                    cells.push(formatFileSize(stats.size), formatDate(stats.last_modified));
+                } catch {
+                    cells.push('Error', 'Error');
                 }
             }
+
+            cells.forEach(content => row.appendChild(this.createCell(content)));
 
             if (highlightPath && item.path === highlightPath) {
                 row.classList.add(CLASSES.highlight);
                 setTimeout(() => row.classList.remove(CLASSES.highlight), 1500);
             }
 
-            fragment.appendChild(row);
-        }
+            return row;
+        });
 
+        const rows = await Promise.all(createRowPromises);
+        rows.forEach(row => fragment.appendChild(row));
+
+        const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
         fileList.appendChild(fragment);
-        this.currentFileList = newItems;
+        
+        this.currentFileList = items;
+        this.filterFiles('');
+    }
+
+    filterFiles(searchTerm) {
+        const normalizedSearch = searchTerm.toLowerCase();
+        document.querySelectorAll('#fileList tr[data-path]').forEach(row => {
+            const fileName = row.querySelector('td:first-child > div').textContent.toLowerCase();
+            row.style.display = fileName.includes(normalizedSearch) ? '' : 'none';
+        });
     }
 
     createItemNameCell(item) {
@@ -203,9 +272,7 @@ class FileManager {
 
     getParentPath() {
         if (this.currentPath.match(/^[A-Z]:\\$/)) return '/';
-        const path = this.currentPath.endsWith('\\') ?
-            this.currentPath.substring(0, this.currentPath.length - 1) :
-            this.currentPath;
+        const path = this.currentPath.replace(/\\$/, '');
         return path.substring(0, path.lastIndexOf('\\')) + '\\';
     }
 
@@ -242,34 +309,62 @@ class FileManager {
         }
     }
 
-    initializeEventListeners() {
-        // Download
-        document.getElementById('downloadFile').addEventListener('click', () =>
-            this.buttons.download.withLoading(async () => {
-                if (!this.selectedItemPath) {
-                    alert('Please select a file to download');
+initializeEventListeners() {
+        // Helper function to handle button actions with loading state
+        const handleButtonClick = async (buttonId, action) => {
+            const button = this.buttons[buttonId];
+            if (button) {
+                await button.withLoading(action);
+            } else {
+                await action();
+            }
+        };
+
+        // Refresh button
+        document.getElementById('refresh')?.addEventListener('click', () =>
+            handleButtonClick('refresh', () => this.listFiles(this.currentPath))
+        );
+
+        // Download button
+        document.getElementById('downloadFile')?.addEventListener('click', () =>
+            handleButtonClick('download', async () => {
+                if (this.selectedItems.size === 0) {
+                    alert('Please select files to download');
                     return;
                 }
+
+                const selectedFiles = Array.from(this.selectedItems)
+                    .filter(item => item.dataset.isDir !== 'true');
+
+                if (selectedFiles.length === 0) {
+                    alert('Please select at least one file to download (directories cannot be downloaded)');
+                    return;
+                }
+
                 try {
-                    const url = `/api/download?path=${encodeURIComponent(this.selectedItemPath)}`;
+                    const paths = selectedFiles.map(item => item.dataset.path);
+                    const queryString = paths.map(path => 
+                        `paths[]=${encodeURIComponent(path)}`
+                    ).join('&');
+                    
                     const link = document.createElement('a');
-                    link.href = url;
+                    link.href = `/api/download?${queryString}`;
                     link.setAttribute('download', '');
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                 } catch (error) {
-                    console.error('Error downloading file:', error);
-                    alert('Error downloading file');
+                    console.error('Error downloading files:', error);
+                    alert('Error downloading files');
                 }
             })
         );
 
-        // Upload
-        document.getElementById('uploadFile').addEventListener('click', () =>
-            this.buttons.upload.withLoading(async () => {
+        // Upload button
+        document.getElementById('uploadFile')?.addEventListener('click', () =>
+            handleButtonClick('upload', async () => {
                 const fileInput = document.getElementById('fileUpload');
-                if (fileInput.files.length === 0) {
+                if (!fileInput?.files.length) {
                     alert('Please select a file to upload');
                     return;
                 }
@@ -277,35 +372,39 @@ class FileManager {
             })
         );
 
-        // Delete
-        document.getElementById('deleteItem').addEventListener('click', () =>
-            this.buttons.delete.withLoading(async () => {
-                if (!this.selectedItemPath) {
-                    alert('Please select a file or folder to delete');
+        // Delete button
+        document.getElementById('deleteItem')?.addEventListener('click', () =>
+            handleButtonClick('delete', async () => {
+                if (this.selectedItems.size === 0) {
+                    alert('Please select files or folders to delete');
                     return;
                 }
 
-                if (!confirm(`Are you sure you want to delete ${this.selectedItemPath}?`)) {
-                    return;
-                }
+                const paths = Array.from(this.selectedItems).map(item => item.dataset.path);
+                const confirmMessage = paths.length === 1 
+                    ? `Are you sure you want to delete ${paths[0]}?`
+                    : `Are you sure you want to delete ${paths.length} items?`;
 
-                await this.handleApiCall(
-                    '/api/delete', 
-                    'POST', 
-                    { path: this.selectedItemPath },
-                    async () => {
+                if (!confirm(confirmMessage)) return;
+
+                await this.handleApiCall('/api/delete', 'POST', { paths }, 
+                    async response => {
+                        if (response.data?.failed?.length) {
+                            alert(`Some items failed to delete:\n${response.data.failed
+                                .map(f => `${f.path}: ${f.error}`).join('\n')}`);
+                        }
                         await this.listFiles(this.currentPath);
-                        document.getElementById('fileOperations').classList.add('hidden');
-                        this.selectedItemPath = null;
+                        this.clearSelection();
                     }
                 );
             })
         );
 
-        // Create folder
-        document.getElementById('createFolder').addEventListener('click', () =>
-            this.buttons.createFolder.withLoading(async () => {
-                const folderName = document.getElementById('newFolderName').value.trim();
+        // Create folder button
+        document.getElementById('createFolder')?.addEventListener('click', () =>
+            handleButtonClick('createFolder', async () => {
+                const folderNameInput = document.getElementById('newFolderName');
+                const folderName = folderNameInput?.value.trim();
                 if (!folderName) {
                     alert('Please enter a folder name');
                     return;
@@ -320,50 +419,112 @@ class FileManager {
                             `${this.currentPath}${folderName}` : 
                             `${this.currentPath}\\${folderName}`;
                         await this.listFiles(this.currentPath, newFolderPath);
-                        document.getElementById('newFolderName').value = '';
+                        if (folderNameInput) folderNameInput.value = '';
                     }
                 );
             })
         );
 
-        // Rename
-        document.getElementById('renameItem').addEventListener('click', () =>
-            this.buttons.rename.withLoading(async () => {
-                const newName = document.getElementById('renameInput').value.trim();
-                if (!this.selectedItemPath || !newName) {
-                    alert('Please select a file or folder and enter a new name');
+        // Rename button
+        document.getElementById('renameItem')?.addEventListener('click', () =>
+            handleButtonClick('rename', async () => {
+                if (this.selectedItems.size !== 1) {
+                    alert('Please select a single file or folder to rename');
+                    return;
+                }
+
+                const selectedItem = Array.from(this.selectedItems)[0];
+                const oldPath = selectedItem.dataset.path;
+                const renameInput = document.getElementById('renameInput');
+                const newName = renameInput?.value.trim();
+                
+                if (!newName) {
+                    alert('Please enter a new name');
                     return;
                 }
 
                 await this.handleApiCall(
-                    '/api/rename', 
-                    'POST', 
-                    { oldPath: this.selectedItemPath, newName },
+                    '/api/rename',
+                    'POST',
+                    { oldPath, newName },
                     async () => {
-                        const newPath = this.currentPath.endsWith('\\') ? 
-                            `${this.currentPath}${newName}` : 
+                        const newPath = this.currentPath.endsWith('\\') ?
+                            `${this.currentPath}${newName}` :
                             `${this.currentPath}\\${newName}`;
                         await this.listFiles(this.currentPath, newPath);
-                        document.getElementById('fileOperations').classList.add('hidden');
-                        this.selectedItemPath = null;
-                        document.getElementById('renameInput').value = '';
+                        document.getElementById('fileOperations')?.classList.add('hidden');
+                        this.clearSelection();
+                        if (renameInput) renameInput.value = '';
                     }
                 );
             })
         );
 
         // File selection display
-        document.getElementById('fileUpload').addEventListener('change', function() {
+        document.getElementById('fileUpload')?.addEventListener('change', function() {
             const selectedFileName = document.getElementById('selectedFileName');
+            if (!selectedFileName) return;
+
             selectedFileName.textContent = this.files.length > 1 ? 
                 `${this.files.length} files selected` : 
                 this.files[0]?.name || 'No file chosen';
             selectedFileName.classList.toggle('text-gray-400', this.files.length === 0);
             selectedFileName.classList.toggle('text-green-400', this.files.length > 0);
         });
+
+        // Search functionality with debounce
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.filterFiles(e.target.value);
+                }, 300);
+            });
+
+            // Prevent file selection when clicking in search input
+            searchInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        // Prevent default mousedown behavior in file list
+        document.getElementById('fileList')?.addEventListener('mousedown', (event) => {
+            event.preventDefault();
+        });
+
+        // Global keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ignore if we're in an input field
+            if (e.target.tagName === 'INPUT') return;
+
+            // Ctrl+A or Cmd+A to select all
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                e.preventDefault();
+                const fileList = document.getElementById('fileList');
+                if (!fileList) return;
+
+                const selectableRows = Array.from(fileList.getElementsByTagName('tr'))
+                    .filter(row => row.dataset.path && 
+                                 !row.classList.contains(...CLASSES.noAccess) && 
+                                 row.style.display !== 'none');
+                
+                this.clearSelection();
+                selectableRows.forEach(row => {
+                    row.classList.add(CLASSES.selected);
+                    this.selectedItems.add(row);
+                });
+                this.updateFileOperationsUI();
+            }
+        });
     }
 
     initialize() {
+        this.initializeButtons();
+        
+        this.dropZone = new DropZone('dropZone', this.handleFileUpload.bind(this));
+        
         this.initializeEventListeners();
         this.listFiles(this.currentPath);
     }
@@ -377,24 +538,26 @@ class DropZone {
     }
 
     setupEventListeners() {
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            this.element.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
+        const preventDefault = e => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            this.element.addEventListener(eventName, () => this.highlight());
-        });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => 
+            this.element.addEventListener(event, preventDefault)
+        );
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            this.element.addEventListener(eventName, () => this.unhighlight());
-        });
+        ['dragenter', 'dragover'].forEach(event => 
+            this.element.addEventListener(event, () => this.highlight())
+        );
 
-        this.element.addEventListener('drop', (e) => {
-            this.onUpload(e.dataTransfer.files, true);
-        });
+        ['dragleave', 'drop'].forEach(event => 
+            this.element.addEventListener(event, () => this.unhighlight())
+        );
+
+        this.element.addEventListener('drop', e => 
+            this.onUpload(e.dataTransfer.files, true)
+        );
     }
 
     highlight() {
@@ -406,7 +569,8 @@ class DropZone {
     }
 
     setLoading() {
-        this.element.innerHTML = `<div class="text-center">
+        this.element.innerHTML = `
+            <div class="text-center">
                 ${SVG_TEMPLATES.spinner(10)}
                 <p class="text-gray-400">Uploading files...</p>
             </div>

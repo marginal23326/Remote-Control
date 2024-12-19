@@ -29,8 +29,8 @@ function hideConnectionOverlay() {
 }
 
 class LoadingButton {
-    constructor(buttonId, loadingText = 'Loading...') {
-        this.button = document.getElementById(buttonId);
+    constructor(buttonElement, loadingText = 'Loading...') {
+        this.button = buttonElement;
         this.originalHtml = this.button.innerHTML;
         this.loadingText = loadingText;
     }

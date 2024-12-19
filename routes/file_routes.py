@@ -4,6 +4,9 @@ from flask_login import login_required
 from services.file_service import FileService
 from werkzeug.utils import secure_filename
 import os
+import zipfile
+import tempfile
+import shutil
 import datetime
 from functools import wraps
 
@@ -112,14 +115,35 @@ def file_info():
 @login_required
 @handle_errors
 def download_file():
-    file_path = request.args.get('path')
-    validate_path(file_path)
-    
-    return send_from_directory(
-        os.path.dirname(file_path),
-        os.path.basename(file_path),
-        as_attachment=True
-    )
+    paths = request.args.getlist('paths[]')
+    if not paths:
+        raise ValueError('No paths provided')
+
+    if len(paths) == 1:
+        path = paths[0]
+        validate_path(path)
+        if os.path.isdir(path):
+            raise ValueError('Cannot download directories directly')
+        return send_from_directory(
+            os.path.dirname(path),
+            os.path.basename(path),
+            as_attachment=True
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_file:
+        with zipfile.ZipFile(temp_file.name, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for path in paths:
+                validate_path(path)
+                if os.path.isdir(path):
+                    continue
+                zip_file.write(path, os.path.basename(path))
+
+        return send_from_directory(
+            os.path.dirname(temp_file.name),
+            os.path.basename(temp_file.name),
+            as_attachment=True,
+            download_name='download.zip'
+        )
 
 @bp.route('/api/upload', methods=['POST'])
 @login_required
@@ -144,14 +168,40 @@ def upload_file():
 @login_required
 @handle_errors
 def delete_file_or_folder():
-    path = request.json.get('path')
-    validate_path(path)
+    paths = request.json.get('paths')
+    if not paths or not isinstance(paths, list):
+        raise ValueError('Invalid paths provided for deletion')
     
-    if os.path.isdir(path):
-        os.rmdir(path)
+    results = {
+        'successful': [],
+        'failed': []
+    }
+    
+    for path in paths:
+        try:
+            validate_path(path)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+            results['successful'].append(path)
+        except Exception as e:
+            results['failed'].append({
+                'path': path,
+                'error': str(e)
+            })
+    
+    # Create an appropriate message based on results
+    if results['failed']:
+        message = (f"Deleted {len(results['successful'])} items, "
+                  f"{len(results['failed'])} failed")
     else:
-        os.remove(path)
-    return success_response(message='Item deleted successfully')
+        message = f"Successfully deleted {len(results['successful'])} items"
+    
+    return success_response(
+        data=results,
+        message=message
+    )
 
 @bp.route('/api/create_folder', methods=['POST'])
 @login_required

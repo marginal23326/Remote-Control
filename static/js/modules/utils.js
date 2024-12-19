@@ -66,11 +66,13 @@ const SVG_TEMPLATES = {
 };
 
 const CLASSES = {
-    row: ['cursor-pointer', 'hover:bg-gray-700/50', 'transition-colors', 'duration-300'],
-    cell: ['px-4', 'py-2'],
+    row: ['cursor-pointer'],
+    cell: ['px-2', 'whitespace-nowrap'],
     noAccess: ['opacity-50', 'cursor-not-allowed'],
     selected: 'bg-blue-500/50',
-    highlight: 'bg-yellow-400/30'
+    highlight: 'bg-yellow-400/30',
+    selectedHover: 'hover:bg-blue-700/50',
+    defaultHover: 'hover:bg-gray-700/50'
 };
 
 export { apiCall, formatFileSize, formatDate, SVG_TEMPLATES, CLASSES }; 

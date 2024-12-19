@@ -226,10 +226,6 @@ input[type=checkbox]:checked {
     margin-bottom: 1rem
 }
 
-.transition-colors {
-    transition: background-color .3s ease-out
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg)

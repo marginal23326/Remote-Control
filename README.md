@@ -1,6 +1,6 @@
 # Remote Control Web Application 🖥️
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marginal23326/Remote-Control/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marginal23326/Remote-Control/blob/main/LICENSE)
 [![Python version](https://img.shields.io/badge/python-3.13+-blue)](https://www.python.org/downloads/)
 
 A real-time remote control web application built with Flask and Socket.IO that enables seamless control of Windows machines through your web browser. Perfect for remote administration, support, and management across your local network.

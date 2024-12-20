@@ -7,8 +7,13 @@ class FileManager {
         this.selectedItems = new Set();
         this.currentFileList = [];
         this.lastSelectedItem = null;
+        this.selectionAnchor = null;
         this.buttons = {};
         this.dropZone = null;
+        this.isDragging = false;
+        this.dragStartElement = null;
+        this.scrollAnimationFrame = null;
+        this.currentScrollSpeed = 0;
     }
 
     initializeButtons() {
@@ -153,13 +158,21 @@ class FileManager {
         this.updateRowHover(row);
     }
 
-    handleRangeSelection(row, lastSelectedRow) {
+    handleRangeSelection(row, anchorRow) {
         const visibleRows = Array.from(document.getElementById('fileList').getElementsByTagName('tr'))
             .filter(row => row.dataset.path && row.style.display !== 'none');
 
-        const [start, end] = [visibleRows.indexOf(row), visibleRows.indexOf(lastSelectedRow)].sort();
+        const currentIndex = visibleRows.indexOf(row);
+        const anchorIndex = visibleRows.indexOf(anchorRow);
 
-        this.clearSelection();
+        if (currentIndex === -1 || anchorIndex === -1) return;
+
+        this.selectedItems.forEach(item => this.toggleItemSelection(item, false));
+        this.selectedItems.clear();
+
+        const start = Math.min(currentIndex, anchorIndex);
+        const end = Math.max(currentIndex, anchorIndex);
+
         visibleRows.slice(start, end + 1)
             .filter(row => !row.classList.contains(...CLASSES.noAccess))
             .forEach(row => this.toggleItemSelection(row, true));
@@ -170,20 +183,122 @@ class FileManager {
             return;
         }
 
-        if (event.shiftKey && this.lastSelectedItem) {
-            this.handleRangeSelection(row, this.lastSelectedItem);
+        if (event.shiftKey) {
+            if (!this.selectionAnchor) {
+                this.selectionAnchor = row;
+                this.toggleItemSelection(row, true);
+            } else {
+                this.handleRangeSelection(row, this.selectionAnchor);
+            }
+            this.lastSelectedItem = row;
         } else if (event.ctrlKey || event.metaKey) {
             this.toggleItemSelection(row, !this.selectedItems.has(row));
             this.lastSelectedItem = row;
+            this.selectionAnchor = row;
         } else {
-            const isSingleReselection = this.selectedItems.size === 1 && this.selectedItems.has(row);
-            this.clearSelection();
-            if (!isSingleReselection) {
+            if (this.selectedItems.size === 1 && this.selectedItems.has(row)) {
+                this.toggleItemSelection(row, false);
+                this.lastSelectedItem = null;
+                this.selectionAnchor = null;
+            } else {
+                this.clearSelection();
                 this.toggleItemSelection(row, true);
                 this.lastSelectedItem = row;
+                this.selectionAnchor = row;
             }
         }
 
+        this.updateFileOperationsUI();
+    }
+
+    handleDragStart(event, row) {
+        if (row.classList.contains(...CLASSES.noAccess)) return;
+        
+        if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
+
+        this.isDragging = true;
+        this.dragStartElement = row;
+        
+        if (!this.selectedItems.has(row)) {
+            this.clearSelection();
+            this.selectionAnchor = row;
+            this.toggleItemSelection(row, true);
+        }
+
+        event.preventDefault();
+    }
+
+    handleDragMove(event) {
+        if (!this.isDragging || !this.dragStartElement) return;
+
+        const fileList = document.getElementById('fileList');
+        const rect = fileList.getBoundingClientRect();
+        const mouseY = event.clientY;
+
+        const rows = Array.from(fileList.getElementsByTagName('tr'))
+            .filter(row => row.dataset.path && row.style.display !== 'none');
+
+        let targetRow = null;
+        for (const row of rows) {
+            const rowRect = row.getBoundingClientRect();
+            if (mouseY >= rowRect.top && mouseY <= rowRect.bottom) {
+                targetRow = row;
+                break;
+            }
+        }
+
+        if (targetRow && !targetRow.classList.contains(...CLASSES.noAccess)) {
+            this.handleRangeSelection(targetRow, this.dragStartElement);
+            this.lastSelectedItem = targetRow;
+        }
+
+        const scrollThreshold = 60;
+        const maxScrollSpeed = 15;
+        const scrollContainer = fileList.closest('.overflow-auto');
+        
+        if (scrollContainer) {
+            const containerRect = scrollContainer.getBoundingClientRect();
+            
+            if (mouseY < containerRect.top + scrollThreshold) {
+                const distance = mouseY - containerRect.top;
+                this.currentScrollSpeed = -maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
+            } else if (mouseY > containerRect.bottom - scrollThreshold) {
+                const distance = containerRect.bottom - mouseY;
+                this.currentScrollSpeed = maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
+            } else {
+                this.currentScrollSpeed = 0;
+            }
+
+            if (this.currentScrollSpeed !== 0) {
+                this.startScrollAnimation(scrollContainer);
+            }
+        }
+    }
+
+    startScrollAnimation(scrollContainer) {
+        if (this.scrollAnimationFrame) return;
+
+        const animate = () => {
+            if (!this.isDragging || this.currentScrollSpeed === 0) {
+                this.scrollAnimationFrame = null;
+                return;
+            }
+
+            scrollContainer.scrollTop += this.currentScrollSpeed;
+            this.scrollAnimationFrame = requestAnimationFrame(animate);
+        };
+
+        this.scrollAnimationFrame = requestAnimationFrame(animate);
+    }
+
+    handleDragEnd() {
+        this.isDragging = false;
+        this.dragStartElement = null;
+        this.currentScrollSpeed = 0;
+        if (this.scrollAnimationFrame) {
+            cancelAnimationFrame(this.scrollAnimationFrame);
+            this.scrollAnimationFrame = null;
+        }
         this.updateFileOperationsUI();
     }
 
@@ -493,6 +608,34 @@ initializeEventListeners() {
         document.getElementById('fileList')?.addEventListener('mousedown', (event) => {
             event.preventDefault();
         });
+
+        const fileList = document.getElementById('fileList');
+        if (fileList) {
+            fileList.addEventListener('mousedown', (e) => {
+                const row = e.target.closest('tr');
+                if (row?.dataset?.path) {
+                    this.handleDragStart(e, row);
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (this.isDragging) {
+                    this.handleDragMove(e);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (this.isDragging) {
+                    this.handleDragEnd();
+                }
+            });
+
+            fileList.addEventListener('dragstart', (e) => {
+                if (this.isDragging) {
+                    e.preventDefault();
+                }
+            });
+        }
 
         // Global keyboard shortcuts
         document.addEventListener('keydown', (e) => {

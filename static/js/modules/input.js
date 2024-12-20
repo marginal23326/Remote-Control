@@ -21,54 +21,6 @@ function initializeInputHandlers(socket) {
         }
     });
 
-    // Shell commands
-    document.getElementById('executeCommand').addEventListener('click', async () => {
-        const command = document.getElementById('shellCommand').value;
-        if (command) {
-            const result = await apiCall('/api/shell', 'POST', { command });
-            const output = document.getElementById('shellOutput');
-
-            output.innerHTML = '';
-            if (result.status === 'success') {
-                if (result.stdout) {
-                    output.innerHTML += `STDOUT:\n${result.stdout}\n`;
-                }
-                if (result.stderr) {
-                    output.innerHTML += `STDERR:\n${result.stderr}\n`;
-                }
-                output.innerHTML += `Exit Code: ${result.code}`;
-            } else {
-                output.innerHTML = `Error: ${result.message}`;
-            }
-
-            output.scrollTop = output.scrollHeight;
-            document.getElementById('shellCommand').value = '';
-        }
-    });
-
-    // Other keyboard event handlers
-    document.addEventListener('keydown', async (e) => {
-        // Only handle keyboard shortcuts when text input is not focused
-        if (document.activeElement.tagName !== 'TEXTAREA' &&
-            document.activeElement.tagName !== 'INPUT') {
-
-            const key = e.key.toLowerCase();
-            if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
-                e.preventDefault();
-                await apiCall('/api/keyboard/shortcut', 'POST', {
-                    shortcut: key.replace('arrow', '')
-                });
-            }
-        }
-    });
-
-    // Handle Enter key in shell command input
-    document.getElementById('shellCommand').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            document.getElementById('executeCommand').click();
-        }
-    });
-
     // Handle Enter key in text input
     document.getElementById('textInput').addEventListener('keypress', (e) => {
         if (e.ctrlKey && e.key === 'Enter') {

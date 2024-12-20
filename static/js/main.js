@@ -3,6 +3,7 @@ import { initializeSocketIO } from './modules/connection.js';
 import { showConnectionOverlay, hideConnectionOverlay, LoadingButton } from './modules/dom.js';
 import { AudioManager } from './modules/audio.js';
 import { initializeStream, updateSettingsDisplay } from './modules/stream.js';
+import { InteractiveShell } from './modules/shell.js';
 import { initializeFileManagement } from './modules/file.js';
 import { initializeInputHandlers } from './modules/input.js';
 import { updateSystemInfo } from './modules/system.js';
@@ -30,6 +31,8 @@ function updateUIBasedOnAuthentication(isAuthenticated) {
 
     const audioManager = new AudioManager(socket);
 
+    const shell = new InteractiveShell('shellSection');
+        
     // Initialize different parts of the application
     initializeStream(sessionId, socket);
     initializeFileManagement();

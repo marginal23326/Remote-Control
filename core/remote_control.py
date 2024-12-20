@@ -1,7 +1,5 @@
 from .stream_manager import StreamManager
 from .mouse_controller import MouseController
-import platform
-import subprocess
 
 class RemoteControlServer:
     def __init__(self):
@@ -17,26 +15,6 @@ class RemoteControlServer:
             'pgup': 'page up', 'pgdown': 'page down', 'home': 'home',
             'end': 'end', 'space': 'space'
         }
-
-    def execute_command(self, command):
-        try:
-            shell = platform.system() == 'Windows'
-            process = subprocess.Popen(
-                command, shell=shell,
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                text=True
-            )
-            stdout, stderr = process.communicate(timeout=60)
-            return {
-                'status': 'success',
-                'stdout': stdout,
-                'stderr': stderr,
-                'code': process.returncode
-            }
-        except subprocess.TimeoutExpired:
-            return {'status': 'error', 'message': 'Command timed out after 60 seconds'}
-        except Exception as e:
-            return {'status': 'error', 'message': str(e)}
 
     def handle_mouse_event(self, data):
         event_type = data['type']

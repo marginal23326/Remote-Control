@@ -5,12 +5,14 @@ Remote-Control/
 ├── core/
 │   ├── remote_control.py     # RemoteControlServer class
 │   ├── stream_manager.py     # StreamManager class
+│   ├── shell_manager.py      # ShellManager class
 │   ├── audio_manager.py      # AudioManager class
 │   └── mouse_controller.py   # My existing mouse_controller.py
 ├── routes/
 │   ├── auth_routes.py        # Login/logout routes
 │   ├── stream_routes.py      # Streaming related routes
-│   ├── system_routes.py      # System info and shell routes
+│   ├── system_routes.py      # System info
+│   ├── shell_routes.py       # Shell routes
 │   ├── input_routes.py       # Keyboard/mouse input routes
 │   └── file_routes.py        # File management routes
 ├── services/
@@ -21,6 +23,7 @@ Remote-Control/
 │   ├── connection_events.py  # Socket connection events
 │   ├── audio_events.py       # Audio-related socket events
 │   ├── auth_events.py        # Auth socket events
+│   ├── shell_events.py       # Shell socket events
 │   └── input_events.py       # Mouse/keyboard socket events
 ├── utils/
 │   ├── __init__.py
@@ -32,6 +35,7 @@ Remote-Control/
 │   │   │   ├── connection.js       # Socket.IO connection management
 │   │   │   ├── dom.js              # DOM manipulation utilities
 │   │   │   ├── file.js             # File management functions
+│   │   │   ├── shell.js            # InteractiveShell class
 │   │   │   ├── input.js            # Keyboard and mouse input handling
 │   │   │   ├── stream.js           # Stream setup, control, and UI updates
 │   │   │   ├── system.js           # System information display

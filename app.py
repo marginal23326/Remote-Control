@@ -4,7 +4,7 @@ from config.server_config import Config
 from config.auth_config import USER_CONFIG
 from core.remote_control import RemoteControlServer
 from core.audio_manager import AudioManager
-from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes
+from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes, shell_routes
 from events import register_events
 from extensions import socketio, init_app
 
@@ -32,6 +32,7 @@ def create_app():
     app.register_blueprint(system_routes.bp)
     app.register_blueprint(file_routes.bp)
     app.register_blueprint(input_routes.bp)
+    app.register_blueprint(shell_routes.bp)
 
     # Register socket event handlers
     register_events(socketio, server, audio_manager)

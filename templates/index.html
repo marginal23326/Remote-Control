@@ -6,6 +6,7 @@
     <title>Remote Control Panel</title>
     <link href="{{ url_for('static', filename='css/tailwind.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
 </head>
 <body class="text-gray-100 min-h-screen p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
@@ -157,7 +158,13 @@
 
                 <!-- Shell Commands -->
                 <section id="shellSection" class="hidden glass-card rounded-xl p-4 sm:p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Interactive Shell</h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Interactive Shell</h2>
+                        <button id="restartShellBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
+                            Restart Shell
+                        </button>
+                    </div>
+                    <div id="terminalContainer" class="relative h-96 overflow-hidden"></div>
                 </section>
             </div>
 
@@ -423,6 +430,10 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-search@0.13.0/lib/xterm-addon-search.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
     <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

@@ -1,198 +1,176 @@
-// static/js/modules/shell.js
-class InteractiveShell {
+export class InteractiveShell {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
         this.sessionId = null;
-        this.commandHistory = [];
-        this.historyIndex = -1;
-        this.currentCommand = '';
         this.socket = io();
-        this.outputPollInterval = null;
-        this.currentPrompt = 'C:\\>';
+        
+        this.currentFontSize = 14;
+        this.minFontSize = 8;
+        this.maxFontSize = 32;
 
-        // Special client-side commands
-        this.clientCommands = {
-            'cls': this.clearScreen.bind(this),
-            'clear': this.clearScreen.bind(this)
-        };
+        this.terminal = new Terminal({
+            cursorBlink: true,
+            cursorStyle: 'bar',
+            theme: {
+                background: '#1a1b26',
+                foreground: '#a9b1d6',
+                cursor: '#c0caf5'
+            },
+            fontSize: this.currentFontSize,
+            fontFamily: 'Consolas, monospace',
+            scrollback: 10000
+        });
 
-        this.initializeUI();
+        this.fitAddon = new window.FitAddon.FitAddon();
+        this.terminal.loadAddon(this.fitAddon);
+        this.terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
+        this.terminal.loadAddon(new window.SearchAddon.SearchAddon());
+
+        this.initializeTerminal();
         this.setupEventHandlers();
         this.createShellSession();
     }
 
-    initializeUI() {
-        this.terminal = document.createElement('div');
-        this.terminal.className = 'terminal bg-gray-900/50 rounded-lg p-4 font-mono text-sm text-green-400 h-96 overflow-y-auto';
+    initializeTerminal() {
+        const terminalElement = document.getElementById('terminalContainer');
         
-        this.outputArea = document.createElement('div');
-        this.outputArea.className = 'output-area whitespace-pre-wrap';
+        // Open terminal
+        this.terminal.open(terminalElement);
         
-        this.inputLine = document.createElement('div');
-        this.inputLine.className = 'input-line flex items-center mt-2';
-        
-        this.prompt = document.createElement('span');
-        this.prompt.className = 'prompt mr-2';
-        this.prompt.textContent = this.currentPrompt;
-        
-        this.input = document.createElement('input');
-        this.input.type = 'text';
-        this.input.className = 'shell-input flex-1 bg-transparent outline-none text-green-400';
-        this.input.autofocus = true;
-        
-        this.inputLine.appendChild(this.prompt);
-        this.inputLine.appendChild(this.input);
-        this.terminal.appendChild(this.outputArea);
-        this.terminal.appendChild(this.inputLine);
-        this.container.appendChild(this.terminal);
-    }
+        // Initial fit
+        setTimeout(() => {
+            this.fitAddon.fit();
+            this.updateTerminalSize();
+        }, 0);
 
-    setupEventHandlers() {
-        this.input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+        // Add resize observer
+        const resizeObserver = new ResizeObserver(() => {
+            this.fitAddon.fit();
+            this.updateTerminalSize();
+        });
+        resizeObserver.observe(terminalElement);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.fitAddon.fit();
+            this.updateTerminalSize();
+        });
+
+        // Add wheel event listener for font size control
+        terminalElement.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
                 e.preventDefault();
-                this.handleCommand();
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                this.navigateHistory('up');
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                this.navigateHistory('down');
-            } else if (e.key === 'l' && e.ctrlKey) {
-                e.preventDefault();
-                this.clearScreen();
+                this.adjustFontSize(e.deltaY < 0 ? 1 : -1);
             }
         });
 
-        // Focus input when clicking anywhere in the terminal
-        this.terminal.addEventListener('click', () => {
-            this.input.focus();
-        });
-
-        this.socket.on('shell_output', (data) => {
-            if (data.output) {
-                const lines = data.output.split('\n');
-                let outputBuffer = '';
-
-                for (const line of lines) {
-                    if (line.startsWith('__UPDATE_PROMPT__')) {
-                        this.updatePrompt(line.replace('__UPDATE_PROMPT__', ''));
-                    } else if (line.trim()) {
-                        outputBuffer += line + '\n';
-                    }
-                }
-
-                if (outputBuffer) {
-                    this.appendOutput(outputBuffer);
-                }
-            }
-        });
-
-        this.socket.on('shell_error', (data) => {
-            this.appendOutput(`Error: ${data.message}\n`, 'text-red-500');
-        });
-    }
-
-    updatePrompt(newPrompt) {
-        this.currentPrompt = newPrompt;
-        this.prompt.textContent = newPrompt;
-    }
-
-    async createShellSession() {
-        try {
-            const response = await fetch('/api/shell/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
-            
-            if (data.status === 'success') {
-                this.sessionId = data.session_id;
-                this.appendOutput('Interactive shell session started.\n');
-                this.startOutputPolling();
-            } else {
-                this.appendOutput('Failed to start shell session.\n', 'text-red-500');
-            }
-        } catch (error) {
-            this.appendOutput(`Error: ${error.message}\n`, 'text-red-500');
+        // Style adjustments
+        const xtermElement = terminalElement.querySelector('.xterm');
+        if (xtermElement) {
+            xtermElement.style.padding = '8px';
+            xtermElement.style.height = '100%';
+            xtermElement.style.width = '100%';
         }
     }
 
-    startOutputPolling() {
-        this.outputPollInterval = setInterval(() => {
+    adjustFontSize(delta) {
+        const newSize = Math.max(this.minFontSize, 
+                               Math.min(this.maxFontSize, 
+                                      this.currentFontSize + delta));
+        
+        if (newSize !== this.currentFontSize) {
+            this.currentFontSize = newSize;
+            this.terminal.options.fontSize = newSize;
+            this.fitAddon.fit();
+            this.updateTerminalSize();
+        }
+    }
+
+    setupEventHandlers() {
+        // Set up restart button
+        const restartButton = document.getElementById('restartShellBtn');
+        restartButton.addEventListener('click', () => this.restartShell());
+
+        // Handle terminal input
+        this.terminal.onData(data => {
+            if (this.sessionId) {
+                this.socket.emit('shell_input', {
+                    session_id: this.sessionId,
+                    command: data
+                });
+            }
+        });
+
+        // Handle shell output
+        this.socket.on('shell_output', data => {
+            if (data.output) {
+                this.terminal.write(data.output);
+            }
+        });
+
+        // Handle errors
+        this.socket.on('shell_error', data => {
+            this.terminal.writeln(`\r\n\x1b[31mError: ${data.message}\x1b[0m`);
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + Plus to increase font size
+            if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
+                e.preventDefault();
+                this.adjustFontSize(1);
+            }
+            // Ctrl + Minus to decrease font size
+            else if (e.ctrlKey && e.key === '-') {
+                e.preventDefault();
+                this.adjustFontSize(-1);
+            }
+        });
+
+        // Start output polling
+        setInterval(() => {
             if (this.sessionId) {
                 this.socket.emit('shell_poll', { session_id: this.sessionId });
             }
         }, 100);
     }
 
-    handleCommand() {
-        const command = this.input.value.trim();
-    
-        // Always show the current line in output, even if empty
-        this.appendOutput(`${this.currentPrompt}${this.input.value}\n`);
-    
-        if (command) {
-            // Add to history
-            this.commandHistory.push(command);
-            this.historyIndex = this.commandHistory.length;
-    
-            // Check for client-side commands first
-            const baseCommand = command.toLowerCase().split(' ')[0];
-            if (this.clientCommands && this.clientCommands[baseCommand]) {
-                this.clientCommands[baseCommand](command);
+    async restartShell() {
+        this.terminal.clear();
+        this.terminal.writeln('\r\n\x1b[33mRestarting shell session...\x1b[0m');
+        await this.createShellSession();
+    }
+
+    async createShellSession() {
+        try {
+            const { cols, rows } = this.terminal;
+            const response = await fetch('/api/shell/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cols, rows })
+            });
+            
+            const data = await response.json();
+            if (data.status === 'success') {
+                this.sessionId = data.session_id;
+                this.terminal.writeln('Interactive shell session started.');
+                this.updateTerminalSize();
             } else {
-                // Send command to server
-                this.socket.emit('shell_input', {
-                    session_id: this.sessionId,
-                    command: command
-                });
+                this.terminal.writeln('\r\n\x1b[31mFailed to start shell session.\x1b[0m');
             }
-        } else {
-            // For empty commands, just emit a carriage return to maintain proper spacing
-            this.socket.emit('shell_input', {
+        } catch (error) {
+            this.terminal.writeln(`\r\n\x1b[31mError: ${error.message}\x1b[0m`);
+        }
+    }
+
+    updateTerminalSize() {
+        if (this.sessionId) {
+            const { cols, rows } = this.terminal;
+            this.socket.emit('shell_resize', {
                 session_id: this.sessionId,
-                command: '\n'
+                cols,
+                rows
             });
         }
-    
-        // Clear input
-        this.input.value = '';
-        this.currentCommand = '';
-    }
-
-    clearScreen() {
-        this.outputArea.innerHTML = '';
-    }
-
-    navigateHistory(direction) {
-        if (this.commandHistory.length === 0) return;
-
-        if (direction === 'up') {
-            if (this.historyIndex > 0) {
-                this.historyIndex--;
-                this.input.value = this.commandHistory[this.historyIndex];
-            }
-        } else if (direction === 'down') {
-            if (this.historyIndex < this.commandHistory.length - 1) {
-                this.historyIndex++;
-                this.input.value = this.commandHistory[this.historyIndex];
-            } else {
-                this.historyIndex = this.commandHistory.length;
-                this.input.value = this.currentCommand;
-            }
-        }
-    }
-
-    appendOutput(text, className = '') {
-        const output = document.createElement('div');
-        output.className = className;
-        output.textContent = text;
-        this.outputArea.appendChild(output);
-        this.terminal.scrollTop = this.terminal.scrollHeight;
     }
 }
-
-export { InteractiveShell };

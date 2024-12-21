@@ -175,3 +175,4 @@ cython_debug/
 .pypirc
 server_supervisor.c
 server_supervisor.exe
+/node_modules

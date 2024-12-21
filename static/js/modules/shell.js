@@ -9,13 +9,13 @@ class InteractiveShell {
         this.socket = io();
         this.outputPollInterval = null;
         this.currentPrompt = 'C:\\>';
-        
+
         // Special client-side commands
         this.clientCommands = {
             'cls': this.clearScreen.bind(this),
             'clear': this.clearScreen.bind(this)
         };
-        
+
         this.initializeUI();
         this.setupEventHandlers();
         this.createShellSession();
@@ -61,12 +61,6 @@ class InteractiveShell {
             } else if (e.key === 'l' && e.ctrlKey) {
                 e.preventDefault();
                 this.clearScreen();
-            } else if (e.key === 'c' && e.ctrlKey) {
-                // Send interrupt signal for running processes
-                this.socket.emit('shell_input', {
-                    session_id: this.sessionId,
-                    command: '\x03'  // Ctrl+C character
-                });
             }
         });
 
@@ -79,7 +73,7 @@ class InteractiveShell {
             if (data.output) {
                 const lines = data.output.split('\n');
                 let outputBuffer = '';
-                
+
                 for (const line of lines) {
                     if (line.startsWith('__UPDATE_PROMPT__')) {
                         this.updatePrompt(line.replace('__UPDATE_PROMPT__', ''));
@@ -87,7 +81,7 @@ class InteractiveShell {
                         outputBuffer += line + '\n';
                     }
                 }
-                
+
                 if (outputBuffer) {
                     this.appendOutput(outputBuffer);
                 }
@@ -195,24 +189,9 @@ class InteractiveShell {
     appendOutput(text, className = '') {
         const output = document.createElement('div');
         output.className = className;
-
-        text = this.processAnsiCodes(text);
-
-        output.innerHTML = text;
-
+        output.textContent = text;
         this.outputArea.appendChild(output);
         this.terminal.scrollTop = this.terminal.scrollHeight;
-    }
-
-    processAnsiCodes(text) {
-        return text
-            .replace(/\x1b\[31m/g, '<span class="text-red-500">')     // Red
-            .replace(/\x1b\[32m/g, '<span class="text-green-500">')   // Green
-            .replace(/\x1b\[33m/g, '<span class="text-yellow-500">')  // Yellow
-            .replace(/\x1b\[34m/g, '<span class="text-blue-500">')    // Blue
-            .replace(/\x1b\[37m/g, '<span class="text-white">')       // White
-            .replace(/\x1b\[0m/g, '</span>')                          // Reset
-            .replace(/\x1b\[\d+m/g, '');  // Remove any other ANSI codes
     }
 }
 

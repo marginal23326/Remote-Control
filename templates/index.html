@@ -157,14 +157,25 @@
                 </section>
 
                 <!-- Shell Commands -->
-                <section id="shellSection" class="hidden glass-card rounded-xl p-4 sm:p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Interactive Shell</h2>
-                        <button id="restartShellBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
-                            Restart Shell
-                        </button>
+                <section id="shellSection" class="glass-card rounded-xl p-4 sm:p-6">
+                    <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+                            Interactive Shell
+                        </h2>
+                        <div class="flex gap-2">
+                            <button id="startShellBtn" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors">
+                                Start Shell
+                            </button>
+                            <button id="restartShellBtn" class="hidden px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
+                                Restart Shell
+                            </button>
+                        </div>
                     </div>
-                    <div id="terminalContainer" class="relative h-96 overflow-hidden"></div>
+                    <div id="terminalContainer" class="relative h-96 overflow-hidden opacity-50 transition-opacity duration-300">
+                        <div class="absolute inset-0 flex items-center justify-center text-gray-500 text-lg font-medium">
+                            Click 'Start Shell' to begin
+                        </div>
+                    </div>
                 </section>
             </div>
 

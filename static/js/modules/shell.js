@@ -1,16 +1,18 @@
 export class InteractiveShell {
     constructor(containerId) {
-        this.container = document.getElementById(containerId);
+        this.container = document.getElementById(containerId);   
         this.sessionId = null;
         this.socket = io();
+        this.isStarted = false;
         
         this.currentFontSize = 14;
         this.minFontSize = 8;
         this.maxFontSize = 32;
 
         this.terminal = new Terminal({
-            cursorBlink: true,
             cursorStyle: 'bar',
+            cursorInactiveStyle: 'none',
+            cursorBlink: true,
             theme: {
                 background: '#1a1b26',
                 foreground: '#a9b1d6',
@@ -18,7 +20,9 @@ export class InteractiveShell {
             },
             fontSize: this.currentFontSize,
             fontFamily: 'Consolas, monospace',
-            scrollback: 10000
+            scrollback: 10000,
+            convertEol: true,
+            disableStdin: true
         });
 
         this.fitAddon = new window.FitAddon.FitAddon();
@@ -28,7 +32,6 @@ export class InteractiveShell {
 
         this.initializeTerminal();
         this.setupEventHandlers();
-        this.createShellSession();
     }
 
     initializeTerminal() {
@@ -37,27 +40,68 @@ export class InteractiveShell {
         // Open terminal
         this.terminal.open(terminalElement);
         
-        // Initial fit
+        // Apply styles to prevent text wrapping
+        const xtermViewport = terminalElement.querySelector('.xterm-viewport');
+        if (xtermViewport) {
+            xtermViewport.style.overflowY = 'auto';
+        }
+
+        const xtermScreen = terminalElement.querySelector('.xterm-screen');
+        if (xtermScreen) {
+            xtermScreen.style.width = '100%';
+            xtermScreen.style.height = '100%';
+        }
+
+        // Initial fit with a small delay to ensure proper rendering
         setTimeout(() => {
             this.fitAddon.fit();
             this.updateTerminalSize();
-        }, 0);
+        }, 100);
+
+
+        terminalElement.addEventListener('contextmenu', async (e) => {
+            if (!this.isStarted) return;
+            e.preventDefault();
+            
+            if (this.terminal.hasSelection()) {
+                // Copy selected text
+                await this.copySelectedText();
+            } else {
+                // Paste text
+                await this.pasteText();
+            }
+        });
 
         // Add resize observer
         const resizeObserver = new ResizeObserver(() => {
-            this.fitAddon.fit();
-            this.updateTerminalSize();
+            if (this.isStarted) {
+                this.fitAddon.fit();
+                this.updateTerminalSize();
+            }
         });
         resizeObserver.observe(terminalElement);
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            this.fitAddon.fit();
-            this.updateTerminalSize();
+            if (this.isStarted) {
+                this.fitAddon.fit();
+                this.updateTerminalSize();
+            }
+        });
+
+        // Improve text selection handling
+        terminalElement.addEventListener('mousedown', (e) => {
+            if (!this.isStarted) return;
+            const xtermSelection = terminalElement.querySelector('.xterm-selection');
+            if (xtermSelection) {
+                xtermSelection.style.pointerEvents = 'auto';
+                xtermSelection.style.userSelect = 'text';
+            }
         });
 
         // Add wheel event listener for font size control
         terminalElement.addEventListener('wheel', (e) => {
+            if (!this.isStarted) return;
             if (e.ctrlKey) {
                 e.preventDefault();
                 this.adjustFontSize(e.deltaY < 0 ? 1 : -1);
@@ -70,10 +114,13 @@ export class InteractiveShell {
             xtermElement.style.padding = '8px';
             xtermElement.style.height = '100%';
             xtermElement.style.width = '100%';
+            xtermElement.style.position = 'relative';
         }
     }
 
     adjustFontSize(delta) {
+        if (!this.isStarted) return;
+        
         const newSize = Math.max(this.minFontSize, 
                                Math.min(this.maxFontSize, 
                                       this.currentFontSize + delta));
@@ -87,13 +134,25 @@ export class InteractiveShell {
     }
 
     setupEventHandlers() {
-        // Set up restart button
+        const startButton = document.getElementById('startShellBtn');
         const restartButton = document.getElementById('restartShellBtn');
+        const terminalContainer = document.getElementById('terminalContainer');
+
+        startButton.addEventListener('click', async () => {
+            if (!this.isStarted) {
+                this.isStarted = true;
+                startButton.classList.add('hidden');
+                restartButton.classList.remove('hidden');
+                terminalContainer.style.opacity = '1';
+                this.terminal.options.disableStdin = false;
+                await this.createShellSession();
+            }
+        });
+
         restartButton.addEventListener('click', () => this.restartShell());
 
-        // Handle terminal input
         this.terminal.onData(data => {
-            if (this.sessionId) {
+            if (this.sessionId && this.isStarted) {
                 this.socket.emit('shell_input', {
                     session_id: this.sessionId,
                     command: data
@@ -101,70 +160,103 @@ export class InteractiveShell {
             }
         });
 
-        // Handle shell output
         this.socket.on('shell_output', data => {
-            if (data.output) {
+            if (data.output && this.isStarted) {
                 this.terminal.write(data.output);
             }
         });
 
-        // Handle errors
         this.socket.on('shell_error', data => {
-            this.terminal.writeln(`\r\n\x1b[31mError: ${data.message}\x1b[0m`);
+            if (this.isStarted) {
+                this.terminal.writeln(`\r\n\x1b[31mError: ${data.message}\x1b[0m`);
+            }
         });
 
-        // Add keyboard shortcuts
+        this.terminal.attachCustomKeyEventHandler((event) => {
+            if (event.type !== 'keydown') return true;
+
+            if (event.ctrlKey && event.key === 'c') {
+                if (!this.terminal.hasSelection()) return true;
+                
+                this.copySelectedText();
+                return false;
+            }
+
+            if (event.ctrlKey && event.key === 'v') {
+                event.preventDefault();
+                this.pasteText();
+                return false;
+            }
+
+            return true;
+        });
+
         document.addEventListener('keydown', (e) => {
-            // Ctrl + Plus to increase font size
+            if (!this.isStarted) return;
             if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
                 e.preventDefault();
                 this.adjustFontSize(1);
             }
-            // Ctrl + Minus to decrease font size
             else if (e.ctrlKey && e.key === '-') {
                 e.preventDefault();
                 this.adjustFontSize(-1);
             }
         });
 
-        // Start output polling
+        // Start output polling only when shell is active
         setInterval(() => {
-            if (this.sessionId) {
+            if (this.sessionId && this.isStarted) {
                 this.socket.emit('shell_poll', { session_id: this.sessionId });
             }
         }, 100);
     }
 
+    async copySelectedText() {
+        if (this.terminal.hasSelection()) {
+            const text = this.terminal.getSelection();
+            await navigator.clipboard.writeText(text);
+            this.terminal.clearSelection();
+        }
+    }
+
+    async pasteText() {
+        const text = await navigator.clipboard.readText();
+        if (text && this.sessionId && this.isStarted) {
+            this.socket.emit('shell_input', {
+                session_id: this.sessionId,
+                command: text
+            });
+        }
+    }
+
     async restartShell() {
+        if (!this.isStarted) return;
+        
         this.terminal.clear();
         this.terminal.writeln('\r\n\x1b[33mRestarting shell session...\x1b[0m');
         await this.createShellSession();
     }
 
     async createShellSession() {
-        try {
-            const { cols, rows } = this.terminal;
-            const response = await fetch('/api/shell/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cols, rows })
-            });
-            
-            const data = await response.json();
-            if (data.status === 'success') {
-                this.sessionId = data.session_id;
-                this.terminal.writeln('Interactive shell session started.');
-                this.updateTerminalSize();
-            } else {
-                this.terminal.writeln('\r\n\x1b[31mFailed to start shell session.\x1b[0m');
-            }
-        } catch (error) {
-            this.terminal.writeln(`\r\n\x1b[31mError: ${error.message}\x1b[0m`);
+        const { cols, rows } = this.terminal;
+        const response = await fetch('/api/shell/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cols, rows })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            this.sessionId = data.session_id;
+            this.terminal.writeln('Interactive shell session started.');
+            this.updateTerminalSize();
+        } else {
+            this.terminal.writeln('\r\n\x1b[31mFailed to start shell session.\x1b[0m');
         }
     }
 
     updateTerminalSize() {
-        if (this.sessionId) {
+        if (this.sessionId && this.isStarted) {
             const { cols, rows } = this.terminal;
             this.socket.emit('shell_resize', {
                 session_id: this.sessionId,

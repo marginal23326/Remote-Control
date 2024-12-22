@@ -8,23 +8,12 @@ def register_shell_events(socketio):
     def handle_shell_input(data):
         session_id = data.get('session_id')
         command = data.get('command')
-        
-        if not session_id or not command:
-            emit('shell_error', {'message': 'Invalid session or command'})
-            return
-            
-        success = shell_manager.write_to_shell(session_id, command)
-        if not success:
-            emit('shell_error', {'message': 'Failed to write to shell'})
-            return
+        shell_manager.write_to_shell(session_id, command)
 
     @socketio.on('shell_poll')
     @login_required
     def handle_shell_poll(data):
         session_id = data.get('session_id')
-        if not session_id:
-            return
-            
         output = shell_manager.read_output(session_id)
         if output:
             emit('shell_output', {'output': output})

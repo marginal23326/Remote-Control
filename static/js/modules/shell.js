@@ -62,12 +62,10 @@ export class InteractiveShell {
         terminalElement.addEventListener('contextmenu', async (e) => {
             if (!this.isStarted) return;
             e.preventDefault();
-            
+
             if (this.terminal.hasSelection()) {
-                // Copy selected text
-                await this.copySelectedText();
+                await this.copySelectedText(true);
             } else {
-                // Paste text
                 await this.pasteText();
             }
         });
@@ -176,15 +174,13 @@ export class InteractiveShell {
             if (event.type !== 'keydown') return true;
 
             if (event.ctrlKey && event.key === 'c') {
-                if (!this.terminal.hasSelection()) return true;
-                
-                this.copySelectedText();
-                return false;
+                if (this.terminal.hasSelection()) {
+                    setTimeout(() => this.terminal.clearSelection(), 0);
+                    return false;
+                }
             }
 
             if (event.ctrlKey && event.key === 'v') {
-                event.preventDefault();
-                this.pasteText();
                 return false;
             }
 
@@ -211,10 +207,12 @@ export class InteractiveShell {
         }, 100);
     }
 
-    async copySelectedText() {
+    async copySelectedText(isRightClick = false) {
         if (this.terminal.hasSelection()) {
-            const text = this.terminal.getSelection();
-            await navigator.clipboard.writeText(text);
+            if (isRightClick) {
+                const text = this.terminal.getSelection();
+                await navigator.clipboard.writeText(text);
+            }
             this.terminal.clearSelection();
         }
     }

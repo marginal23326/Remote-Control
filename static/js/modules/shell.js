@@ -1,10 +1,10 @@
 export class InteractiveShell {
     constructor(containerId) {
-        this.container = document.getElementById(containerId);   
+        this.container = document.getElementById(containerId);
         this.sessionId = null;
         this.socket = io();
         this.isStarted = false;
-        
+
         this.currentFontSize = 14;
         this.minFontSize = 8;
         this.maxFontSize = 32;
@@ -30,16 +30,56 @@ export class InteractiveShell {
         this.terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
         this.terminal.loadAddon(new window.SearchAddon.SearchAddon());
 
-        this.initializeTerminal();
-        this.setupEventHandlers();
+        this.isSelectionMode = false;
+        this.longPressTimeout = null;
+        this.longPressDuration = 500; // ms
+        
+        const textModeBtn = document.getElementById('shellTextModeBtn');
+        const closeTextBtn = document.getElementById('shellCloseTextBtn');
+        
+        if (textModeBtn) {
+            textModeBtn.addEventListener('click', () => this.toggleTextMode());
+        }
+        
+        if (closeTextBtn) {
+            closeTextBtn.addEventListener('click', () => this.closeTextMode());
+        }
+    }
+
+    toggleTextMode() {
+        const overlay = document.getElementById('shellTextOverlay');
+        const content = document.getElementById('shellTextContent');
+
+        if (overlay && content) {
+            overlay.classList.remove('hidden');
+            content.textContent = this.getAllTerminalContent();
+        }
+    }
+
+    closeTextMode() {
+        const overlay = document.getElementById('shellTextOverlay');
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    getAllTerminalContent() {
+        let content = '';
+        for (let i = 0; i < this.terminal.buffer.active.length; i++) {
+            const line = this.terminal.buffer.active.getLine(i);
+            if (line) {
+                content += line.translateToString() + '\n';
+            }
+        }
+        return content;
     }
 
     initializeTerminal() {
         const terminalElement = document.getElementById('terminalContainer');
-        
+
         // Open terminal
         this.terminal.open(terminalElement);
-        
+
         // Apply styles to prevent text wrapping
         const xtermViewport = terminalElement.querySelector('.xterm-viewport');
         if (xtermViewport) {
@@ -57,7 +97,6 @@ export class InteractiveShell {
             this.fitAddon.fit();
             this.updateTerminalSize();
         }, 100);
-
 
         terminalElement.addEventListener('contextmenu', async (e) => {
             if (!this.isStarted) return;
@@ -118,11 +157,11 @@ export class InteractiveShell {
 
     adjustFontSize(delta) {
         if (!this.isStarted) return;
-        
-        const newSize = Math.max(this.minFontSize, 
-                               Math.min(this.maxFontSize, 
-                                      this.currentFontSize + delta));
-        
+
+        const newSize = Math.max(this.minFontSize,
+            Math.min(this.maxFontSize,
+            this.currentFontSize + delta));
+
         if (newSize !== this.currentFontSize) {
             this.currentFontSize = newSize;
             this.terminal.options.fontSize = newSize;
@@ -192,8 +231,7 @@ export class InteractiveShell {
             if (e.ctrlKey && (e.key === '+' || e.key === '=')) {
                 e.preventDefault();
                 this.adjustFontSize(1);
-            }
-            else if (e.ctrlKey && e.key === '-') {
+            } else if (e.ctrlKey && e.key === '-') {
                 e.preventDefault();
                 this.adjustFontSize(-1);
             }
@@ -229,7 +267,7 @@ export class InteractiveShell {
 
     async restartShell() {
         if (!this.isStarted) return;
-        
+
         this.terminal.clear();
         this.terminal.writeln('\r\n\x1b[33mRestarting shell session...\x1b[0m');
         await this.createShellSession();
@@ -242,7 +280,7 @@ export class InteractiveShell {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cols, rows })
         });
-        
+
         const data = await response.json();
         if (data.status === 'success') {
             this.sessionId = data.session_id;

@@ -169,12 +169,29 @@
                             <button id="restartShellBtn" class="hidden px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
                                 Restart Shell
                             </button>
+                            <button id="shellTextModeBtn" class="block sm:hidden px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 2a1 1 0 0 0 0 2h2a1 1 0 1 0 0-2H9z"/>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 0 1 2-2 3 3 0 0 0 3 3h2a3 3 0 0 0 3-3 2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5zm3 4a1 1 0 0 0 0 2 1 1 0 1 0 0-2zm3 0a1 1 0 0 0 0 2h3a1 1 0 1 0 0-2h-3zm-3 4a1 1 0 1 0 0 2 1 1 0 1 0 0-2zm3 0a1 1 0 1 0 0 2h3a1 1 0 1 0 0-2h-3z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="ml-2">Text Mode</span>
+                            </button>
                         </div>
                     </div>
                     <div id="terminalContainer" class="relative h-96 overflow-hidden opacity-50 transition-opacity duration-300">
                         <div class="absolute inset-0 flex items-center justify-center text-gray-500 text-lg font-medium">
                             Click 'Start Shell' to begin
                         </div>
+                    </div>
+                    <div id="shellTextOverlay" class="hidden fixed inset-0 bg-gray-900 text-gray-100 p-4 overflow-auto z-50">
+                        <div class="flex justify-end mb-4">
+                            <button id="shellCloseTextBtn" class="p-2 bg-red-600 text-white rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <pre id="shellTextContent" class="whitespace-pre-wrap font-mono text-sm"></pre>
                     </div>
                 </section>
             </div>

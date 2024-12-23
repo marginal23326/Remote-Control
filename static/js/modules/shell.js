@@ -33,17 +33,9 @@ export class InteractiveShell {
         this.isSelectionMode = false;
         this.longPressTimeout = null;
         this.longPressDuration = 500; // ms
-        
-        const textModeBtn = document.getElementById('shellTextModeBtn');
-        const closeTextBtn = document.getElementById('shellCloseTextBtn');
-        
-        if (textModeBtn) {
-            textModeBtn.addEventListener('click', () => this.toggleTextMode());
-        }
-        
-        if (closeTextBtn) {
-            closeTextBtn.addEventListener('click', () => this.closeTextMode());
-        }
+
+        this.initializeTerminal();
+        this.setupEventHandlers();
     }
 
     toggleTextMode() {
@@ -174,6 +166,16 @@ export class InteractiveShell {
         const startButton = document.getElementById('startShellBtn');
         const restartButton = document.getElementById('restartShellBtn');
         const terminalContainer = document.getElementById('terminalContainer');
+        const textModeBtn = document.getElementById('shellTextModeBtn');
+        const closeTextBtn = document.getElementById('shellCloseTextBtn');
+
+        if (textModeBtn) {
+            textModeBtn.addEventListener('click', () => this.toggleTextMode());
+        }
+
+        if (closeTextBtn) {
+            closeTextBtn.addEventListener('click', () => this.closeTextMode());
+        }
 
         startButton.addEventListener('click', async () => {
             if (!this.isStarted) {

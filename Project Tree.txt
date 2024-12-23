@@ -37,6 +37,7 @@ Remote-Control/
 │   │   │   ├── file.js             # File management functions
 │   │   │   ├── shell.js            # InteractiveShell class
 │   │   │   ├── input.js            # Keyboard and mouse input handling
+│   │   │   ├── nav.js              # Navigation function
 │   │   │   ├── stream.js           # Stream setup, control, and UI updates
 │   │   │   ├── system.js           # System information display
 │   │   │   └── utils.js            # General utility functions (like apiCall)

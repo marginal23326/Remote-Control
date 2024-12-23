@@ -12,13 +12,15 @@ const streamUI = {
     nativeHeight: null,
 
     show() {
-        this.container.style.height = 'auto';
+        this.container.classList.remove('h-0');
+        this.container.classList.add('h-auto');
         this.status.classList.remove('hidden');
         this.status.classList.add('inline-flex');
     },
 
     hide() {
-        this.container.style.height = '0';
+        this.container.classList.remove('h-auto');
+        this.container.classList.add('h-0');
         this.status.classList.remove('inline-flex');
         this.status.classList.add('hidden');
     },

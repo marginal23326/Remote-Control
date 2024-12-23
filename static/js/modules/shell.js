@@ -185,6 +185,7 @@ export class InteractiveShell {
                 terminalContainer.style.opacity = '1';
                 this.terminal.options.disableStdin = false;
                 await this.createShellSession();
+                this.fitAddon.fit();
             }
         });
 

@@ -8,32 +8,96 @@
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" >
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
 </head>
-<body class="text-gray-100 min-h-screen p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <div id="connectionOverlay" class="connection-overlay">
-            <div class="spinner"></div>
-            <p id="connectionMessage">Connecting...</p>
-        </div>
-        <div class="relative px-4 pt-16 sm:pt-4">
-            <div class="absolute top-4 right-4 z-10">
-                <button id="logoutButton" class="hidden control-button bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                    Logout
-                </button>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Overlay -->
+    <div id="connectionOverlay" class="connection-overlay fixed inset-0 bg-gray-800/50 z-50 flex items-center justify-center">
+        <div class="spinner"></div>
+        <p id="connectionMessage">Connecting...</p>
+    </div>
+    <!-- Main Content -->
+    <div class="p-4 md:p-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+                Remote Control Panel
+            </h1>
+            <button id="logoutButton" class="hidden px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white">
+                Logout
+            </button>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="sticky top-0 z-50 backdrop-blur-md bg-gray-800/30 border-b border-gray-700/50 mb-8 rounded-xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex-1 overflow-x-auto hide-scrollbar">
+                        <ul class="flex space-x-1 sm:space-x-2 min-w-max">
+                            <li>
+                                <a href="#streamSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 10 5-2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1l-5-2M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2"/>
+                                    </svg>
+                                    Stream
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#audioSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 0 1-7 7m0 0a7 7 0 0 1-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 0 1-3-3V5a3 3 0 1 1 6 0v6a3 3 0 0 1-3 3"/>
+                                    </svg>
+                                    Audio
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#shellSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 9 3 3-3 3m5 0h3M5 20h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2"/>
+                                    </svg>
+                                    Shell
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#keyboardSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.7 5.7L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.6a1 1 0 0 1 .3-.7l6-6A6 6 0 1 1 21 9"/>
+                                    </svg>
+                                    Keyboard
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#fileSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                    </svg>
+                                    Files
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#systemSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.3 4.3c.5-1.7 3-1.7 3.4 0a1.7 1.7 0 0 0 2.5 1c1.6-.9 3.4 1 2.4 2.5a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.4a1.7 1.7 0 0 0-1 2.5c1 1.6-.8 3.4-2.4 2.4a1.7 1.7 0 0 0-2.5 1c-.5 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.5-1c-1.6 1-3.4-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.4a1.7 1.7 0 0 0 1-2.5c-1-1.6.8-3.4 2.4-2.4 1 .6 2.2 0 2.5-1z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                    </svg>
+                                    System
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <header class="text-center mb-12 relative">
-                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 px-12">
-                    Remote Control Panel
-                </h1>
-                <p class="text-blue-300 mt-2">Secure Remote Access Interface</p>
-            </header>
-        </div>
-        <div id="activeWindow" class="text-center mb-4 text-gray-300"></div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left Column -->
-            <div class="space-y-8">
-                <!-- Stream Section -->
-                <section id="streamSection" class="hidden glass-card rounded-xl p-4 sm:p-6">
-                    <!-- Header with title and controls -->
+        </nav>
+
+        <!-- Content Sections -->
+        <main>
+            <section id="streamSection" class="section">
+                <div class="glass-card rounded-xl p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div class="flex items-center gap-3">
                             <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Screen Stream</h2>
@@ -42,6 +106,7 @@
                                 <span id="currentFPS">0</span> FPS
                             </span>
                         </div>
+                        <div id="activeWindow" class="text-center text-gray-300"></div>
                         <div class="flex flex-wrap gap-2">
                             <div class="inline-flex rounded-lg overflow-hidden shadow-sm">
                                 <button id="startStream" class="inline-flex items-center justify-center w-10 h-10 bg-emerald-600 hover:bg-emerald-700 text-white transition-colors" title="Start Stream">
@@ -62,8 +127,8 @@
                         </div>
                     </div>
 
-                    <!-- Stream container with collapsed state -->
-                    <div id="streamContainer" class="stream-container mb-6 transition-all duration-300 ease-in-out" style="height: 0;">
+                    <!-- Stream container -->
+                    <div id="streamContainer" class="stream-container mb-6 transition-all duration-300 ease-in-out h-0">
                         <img id="streamView" src="" alt="Screen Stream" class="w-full h-full object-cover">
                         <div id="cursorOverlay" class="cursor-overlay"></div>
                     </div>
@@ -112,10 +177,11 @@
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Audio Controls -->
-                <section id="audioSection" class="hidden glass-card rounded-xl p-6">
+            <section id="audioSection" class="section hidden">
+                <div class="glass-card rounded-xl p-6">
                     <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Audio Controls</h2>
                     <div class="space-y-4">
                         <!-- Server Audio -->
@@ -154,10 +220,11 @@
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Shell Commands -->
-                <section id="shellSection" class="glass-card rounded-xl p-4 sm:p-6">
+            <section id="shellSection" class="section hidden">
+                <div class="glass-card rounded-xl p-4 sm:p-6">
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
                             Interactive Shell
@@ -192,13 +259,11 @@
                         </div>
                         <pre id="shellTextContent" class="whitespace-pre-wrap font-mono text-sm"></pre>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
 
-            <!-- Right Column -->
-            <div class="space-y-8">
-                <!-- Keyboard Controls -->
-                <section id="keyboardSection" class="hidden glass-card rounded-xl p-6">
+            <section id="keyboardSection" class="section hidden">
+                <div class="glass-card rounded-xl p-6">
                     <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Keyboard Controls</h2>
                     
                     <div class="space-y-4">
@@ -326,22 +391,13 @@
                             <button id="sendText" class="control-button mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg w-full">Send Text</button>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- File Management Section -->
-                <section id="fileSection" class="hidden glass-card rounded-xl p-6">
+            <section id="fileSection" class="section hidden">
+                <div class="glass-card rounded-xl p-6">
                     <!-- Title -->
                     <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 mb-6">File Management</h2>
-
-                    <!-- Drop Zone -->
-                    <div id="dropZone" class="flex justify-center items-center border-2 border-dashed border-blue-500/50 rounded-xl p-8 mb-6 transition-all hover:border-blue-500 hover:bg-blue-500/5">
-                        <div class="text-center">
-                            <svg class="w-10 h-10 mx-auto mb-2 text-blue-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                            </svg>
-                            <p class="text-gray-400">Drag and drop files here to upload</p>
-                        </div>
-                    </div>
 
                     <!-- Search Bar -->
                     <div class="mb-4">
@@ -429,6 +485,15 @@
                                 </svg>
                                 Upload File
                             </h3>
+                            <!-- Drop Zone -->
+                            <div id="dropZone" class="flex justify-center items-center border-2 border-dashed border-blue-500/50 rounded-xl p-8 mb-6 transition-all hover:border-blue-500 hover:bg-blue-500/5">
+                                <div class="text-center">
+                                    <svg class="w-10 h-10 mx-auto mb-2 text-blue-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <p class="text-gray-400">Drag and drop files here to upload</p>
+                                </div>
+                            </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <input type="file" id="fileUpload" class="hidden" name="files" multiple>
                                 <label for="fileUpload" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer">
@@ -447,15 +512,16 @@
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- System Info -->
-                <div id="systemSection" class="hidden glass-card rounded-xl p-6">
+            <section id="systemSection" class="section hidden">
+                <div class="glass-card rounded-xl p-6">
                     <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">System Information</h2>
                     <div id="systemInfo" class="bg-gray-900/50 p-4 rounded-lg space-y-2 whitespace-pre-wrap break-words max-w-full"></div>
                 </div>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>

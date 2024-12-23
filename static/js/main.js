@@ -8,6 +8,7 @@ import { initializeFileManagement } from './modules/file.js';
 import { initializeInputHandlers } from './modules/input.js';
 import { updateSystemInfo } from './modules/system.js';
 import { apiCall } from './modules/utils.js';
+import { initializeNavigation } from './modules/nav.js';
 
 function updateUIBasedOnAuthentication(isAuthenticated) {
     const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection'];
@@ -22,6 +23,8 @@ function updateUIBasedOnAuthentication(isAuthenticated) {
     if (!isAuthenticated && window.location.pathname !== '/login') {
         window.location.href = '/login';
     }
+
+    initializeNavigation(isAuthenticated);
 }
 
 (async function () {

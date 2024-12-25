@@ -5,9 +5,14 @@ async function apiCall(endpoint, method = 'GET', data = null) {
         headers: {}
     };
     if (data) {
-        options.headers['Content-Type'] = 'application/json';
-        options.body = JSON.stringify(data);
+        if (data instanceof FormData) {
+            options.body = data;
+        } else {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(data);
+        }
     }
+    
     const response = await fetch(endpoint, options);
     return response.json();
 }

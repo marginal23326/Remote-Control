@@ -28,7 +28,7 @@ A real-time remote control web application built with Flask and Socket.IO that e
 - Create new folders.
 - Rename files and folders.
 
-### 💻 Power User Features
+### 💻 Additional Features
 - **Interactive Shell**: Real-time command execution with live output
 - **System Information:** Display detailed system information of the remote machine (CPU, memory, disk, network, etc.).
 - **Security**: Role-based authentication with session management

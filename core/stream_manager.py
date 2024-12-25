@@ -6,11 +6,11 @@ import time
 import sys
 import win32gui
 from threading import Lock, Event, Thread
-from extensions import socketio
 from flask import current_app
 
 class StreamManager:
-    def __init__(self):
+    def __init__(self, socketio):
+        self.socketio = socketio
         self.stream_active = False
         self.stream_lock = Lock()
         self.settings_lock = Lock()
@@ -166,8 +166,8 @@ class StreamManager:
             while self.stream_active:
                 if self.current_stream_sid:
                     try:
-                        x, y = app.server.mouse.position
-                        socketio.emit('mouse_position', {'x': x, 'y': y})
+                        x, y = app.input_manager.mouse.position
+                        self.socketio.emit('mouse_position', {'x': x, 'y': y})
                     except Exception as e:
                         print(f"Error getting or emitting mouse position: {e}")
 

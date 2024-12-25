@@ -206,12 +206,6 @@ export class InteractiveShell {
             }
         });
 
-        this.socket.on('shell_error', data => {
-            if (this.isStarted) {
-                this.terminal.writeln(`\r\n\x1b[31mError: ${data.message}\x1b[0m`);
-            }
-        });
-
         this.terminal.attachCustomKeyEventHandler((event) => {
             if (event.type !== 'keydown') return true;
 

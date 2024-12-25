@@ -77,7 +77,7 @@ class ShellManager:
     def resize_terminal(self, session_id, cols, rows):
         if session_id in self.shells:
             try:
-                self.shells[session_id]['pty'].set_winsize(rows, cols)
+                self.shells[session_id]['pty'].setwinsize(rows, cols)
             except Exception as e:
                 print(f"Error resizing terminal: {str(e)}")
 
@@ -92,6 +92,3 @@ class ShellManager:
             del self.output_queues[session_id]
         except Exception as e:
             print(f"Error cleaning up session: {str(e)}")
-
-# Create singleton instance
-shell_manager = ShellManager()

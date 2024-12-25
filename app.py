@@ -2,8 +2,10 @@ from flask import Flask
 from flask_login import LoginManager, UserMixin
 from config.server_config import Config
 from config.auth_config import USER_CONFIG
-from core.remote_control import RemoteControlServer
+from core.input_manager import InputManager
 from core.audio_manager import AudioManager
+from core.stream_manager import StreamManager
+from core.shell_manager import ShellManager
 from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes, shell_routes
 from events import register_events
 from extensions import socketio, init_app
@@ -16,15 +18,19 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    init_app(app)  # Initialize SocketIO
+    init_app(app)
     login_manager = LoginManager(app)
     login_manager.login_view = 'auth.login'
 
-    server = RemoteControlServer()
     audio_manager = AudioManager(socketio)
+    stream_manager = StreamManager(socketio)
+    input_manager = InputManager()
+    shell_manager = ShellManager()
 
-    app.server = server
+    app.input_manager = input_manager
     app.audio_manager = audio_manager
+    app.stream_manager = stream_manager
+    app.shell_manager = shell_manager
 
     # Register blueprints
     app.register_blueprint(auth_routes.bp)
@@ -35,7 +41,7 @@ def create_app():
     app.register_blueprint(shell_routes.bp)
 
     # Register socket event handlers
-    register_events(socketio, server, audio_manager)
+    register_events(socketio, input_manager, audio_manager, shell_manager)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -43,4 +49,4 @@ def create_app():
             return User(user_id)
         return None
 
-    return app, socketio
+    return app

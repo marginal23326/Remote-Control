@@ -7,7 +7,6 @@ bp = Blueprint('input', __name__)
 @bp.route('/api/keyboard/shortcut', methods=['POST'])
 @login_required
 def keyboard_shortcut():
-    
     data = request.json
     shortcut = data.get('shortcut')
     modifiers = data.get('modifiers', [])
@@ -15,12 +14,13 @@ def keyboard_shortcut():
     try:
         if modifiers:
             keyboard.press_and_release('+'.join(modifiers + [shortcut]))
-        elif shortcut in current_app.server.shortcuts:
-            keyboard.press_and_release(current_app.server.shortcuts[shortcut])
+        elif shortcut in current_app.input_manager.shortcuts:
+            keyboard.press_and_release(current_app.input_manager.shortcuts[shortcut])
         else:
             keyboard.press_and_release(shortcut)
         return jsonify({'status': 'success'})
-    except:
+    except Exception as e:
+        print(f"Error in keyboard shortcut: {e}")
         return jsonify({'status': 'error', 'message': 'Invalid shortcut'})
 
 @bp.route('/api/keyboard/type', methods=['POST'])

@@ -38,50 +38,58 @@ A real-time remote control web application built with Flask and Socket.IO that e
 
 ```
 Remote-Control/
-├── app.py                   # Main application setup
-├── server.py                # Main entry point
-├── extensions.py            # Socketio initialization
 ├── config/
-│   ├── auth_config.py       # Authentication settings
-│   └── server_config.py     # Server configuration
+│   ├── auth_config.py        # Authentication configuration
+│   └── server_config.py      # Server configuration
 ├── core/
-│   ├── remote_control.py    # Main remote control logic
-│   ├── stream_manager.py    # Screen streaming management
-│   ├── audio_manager.py     # Audio streaming handling
-│   └── mouse_controller.py  # Mouse input processing
+│   ├── input_manager.py      # InputManager class
+│   ├── stream_manager.py     # StreamManager class
+│   ├── shell_manager.py      # ShellManager class
+│   ├── audio_manager.py      # AudioManager class
+│   └── mouse_controller.py   # Windows-specific mouse control
 ├── routes/
-│   ├── auth_routes.py       # Authentication endpoints
-│   ├── stream_routes.py     # Streaming endpoints
-│   ├── system_routes.py     # System information
-│   ├── input_routes.py      # Input handling
-│   └── file_routes.py       # File operations
+│   ├── auth_routes.py        # Login/logout routes
+│   ├── stream_routes.py      # Streaming related routes
+│   ├── system_routes.py      # System info
+│   ├── shell_routes.py       # Shell routes
+│   ├── input_routes.py       # Keyboard/mouse input routes
+│   └── file_routes.py        # File management routes
 ├── services/
-│   ├── system_service.py    # System information
-│   └── file_service.py      # File operations
+│   ├── system_service.py     # System information functions
+│   └── file_service.py       # File operations functions
 ├── events/
-│   ├── connection_events.py # Connection management
-│   ├── audio_events.py      # Audio streaming
-│   ├── auth_events.py       # Auth socket
-│   └── input_events.py      # Input processing
+│   ├── __init__.py
+│   ├── connection_events.py  # Socket connection events
+│   ├── audio_events.py       # Audio-related socket events
+│   ├── auth_events.py        # Auth socket events
+│   ├── shell_events.py       # Shell socket events
+│   └── input_events.py       # Mouse/keyboard socket events
 ├── utils/
 │   └── helpers.py
-├── templates/               # HTML templates
-└── static/
-    ├── js/
-    │   ├── modules/
-    │   │   ├── audio.js            # AudioManager class
-    │   │   ├── connection.js       # Socket.IO connection management
-    │   │   ├── dom.js              # DOM manipulation utilities
-    │   │   ├── file.js             # File management functions
-    │   │   ├── input.js            # Keyboard and mouse input handling
-    │   │   ├── stream.js           # Stream setup, control, and UI updates
-    │   │   ├── system.js           # System information display
-    │   │   └── utils.js            # General utility functions (like apiCall)
-    │   ├── main.js                 # Main initialization and event handling
-    │   └── audio-worklet-processor.js
-    └── css/
-        ├── tailwind.css
-        └── styles.css
+├── static/
+│   ├── js/
+│   │   ├── modules/
+│   │   │   ├── audio.js            # AudioManager class
+│   │   │   ├── connection.js       # Socket.IO connection management
+│   │   │   ├── dom.js              # DOM manipulation utilities
+│   │   │   ├── file.js             # File management functions
+│   │   │   ├── shell.js            # InteractiveShell class
+│   │   │   ├── input.js            # Keyboard and mouse input handling
+│   │   │   ├── nav.js              # Navigation function
+│   │   │   ├── stream.js           # Stream setup, control, and UI updates
+│   │   │   ├── system.js           # System information display
+│   │   │   └── utils.js            # General utility functions (like apiCall)
+│   │   ├── main.js                 # Main initialization and event handling
+│   │   └── audio-worklet-processor.js
+│   └── css/
+│       ├── tailwind.css
+│       └── styles.css
+├── templates/
+│   ├── index.html
+│   └── login.html
+├── app.py                           # Main application setup
+├── extensions.py                    # SocketIO initialization
+└── server.py                        # Main entry point
 ```
 
 ## 🚀 Quick Start Guide

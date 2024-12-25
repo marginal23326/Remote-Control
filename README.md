@@ -9,7 +9,7 @@ A real-time remote control web application built with Flask and Socket.IO that e
 
 ### 🎥 Real-time Screen Streaming
 - High-performance desktop streaming with configurable quality, resolution, and FPS
-- Powered by DXCam for best screen capture performance on Windows
+- Powered by DXCam for the best screen capture performance on Windows
 
 ### 🔊 Advanced Audio Control
 - **Server → Client**: Stream system audio or microphone input
@@ -151,4 +151,4 @@ The compiled executable will be available in the `dist` directory.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License—see the [LICENSE](LICENSE) file for details.

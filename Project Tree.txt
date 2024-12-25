@@ -3,11 +3,11 @@ Remote-Control/
 │   ├── auth_config.py        # Authentication configuration
 │   └── server_config.py      # Server configuration (secrets, etc.)
 ├── core/
-│   ├── remote_control.py     # RemoteControlServer class
+│   ├── input_manager.py      # InputManager class
 │   ├── stream_manager.py     # StreamManager class
 │   ├── shell_manager.py      # ShellManager class
 │   ├── audio_manager.py      # AudioManager class
-│   └── mouse_controller.py   # My existing mouse_controller.py
+│   └── mouse_controller.py   # Windows-specific mouse control
 ├── routes/
 │   ├── auth_routes.py        # Login/logout routes
 │   ├── stream_routes.py      # Streaming related routes
@@ -46,7 +46,9 @@ Remote-Control/
 │   └── css/
 │       ├── tailwind.css
 │       └── styles.css
-├── templates/                       # HTML templates (index.html, login.html)
+├── templates/
+│   ├── index.html
+│   └── login.html
 ├── app.py                           # Main application setup
 ├── extensions.py                    # SocketIO initialization
 └── server.py                        # Main entry point

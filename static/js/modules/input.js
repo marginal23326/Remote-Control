@@ -4,7 +4,7 @@ import { streamUI, streamActive, calculateStreamDimensions, isFullscreen } from 
 
 function initializeInputHandlers(socket) {
     // Keyboard shortcuts
-    document.querySelectorAll('.shortcut').forEach(button => {
+    document.querySelectorAll('[data-key]').forEach(button => {
         button.addEventListener('click', async () => {
             await apiCall('/api/keyboard/shortcut', 'POST', {
                 shortcut: button.dataset.key
@@ -12,53 +12,93 @@ function initializeInputHandlers(socket) {
         });
     });
 
-    // Text input
-    document.getElementById('sendText').addEventListener('click', async () => {
-        const text = document.getElementById('textInput').value;
-        if (text) {
-            await apiCall('/api/keyboard/type', 'POST', { text });
-            document.getElementById('textInput').value = '';
+    // Text input handling
+    const textInput = document.getElementById('textInput');
+    const sendTextButton = textInput?.nextElementSibling;
+
+    if (sendTextButton && textInput) {
+        async function sendText() {
+            const text = textInput.value;
+            if (text) {
+                await apiCall('/api/keyboard/type', 'POST', { text });
+                textInput.value = '';
+            }
         }
-    });
 
-    // Handle Enter key in text input
-    document.getElementById('textInput').addEventListener('keypress', (e) => {
-        if (e.ctrlKey && e.key === 'Enter') {
-            document.getElementById('sendText').click();
-        }
-    });
+        // Send text on button click
+        sendTextButton.addEventListener('click', sendText);
 
-    document.getElementById('sendCustomShortcut').addEventListener('click', async () => {
-        const modifiers = Array.from(document.querySelectorAll('.modifier-key:checked'))
-            .map(cb => cb.value);
-        const key = document.getElementById('customKey').value.toLowerCase().trim();
+        textInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                sendText();
+            }
+        });
+    }
 
-        if (key) {
-            await apiCall('/api/keyboard/shortcut', 'POST', {
-                shortcut: key,
-                modifiers: modifiers
-            });
-        }
-    });
+    // Custom shortcut handling
+    const customKeyInput = document.getElementById('customKey');
+    const sendCustomButton = document.getElementById('sendCustomShortcut');
 
-    document.querySelectorAll('.accordion > button').forEach(button => {
+    // Modifier keys
+    const modifierButtons = document.querySelectorAll('.modifier-btn');
+    let activeModifiers = [];
+
+    modifierButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('span + svg');
-            
-            content.classList.toggle('active');
-            icon.style.transform = content.classList.contains('active') ? 'rotate(180deg)' : '';
-            
-            // Close other accordions
-            document.querySelectorAll('.accordion-content').forEach(otherContent => {
-                if (otherContent !== content) {
-                    otherContent.classList.remove('active');
-                    const otherIcon = otherContent.previousElementSibling.querySelector('span + svg');
-                    if (otherIcon) {
-                        otherIcon.style.transform = '';
-                    }
+            const modifier = button.dataset.modifier;
+            button.classList.toggle('active');
+
+            // Toggle the inner dot visibility
+            const dot = button.querySelector('.w-2.h-2');
+            if (dot) {
+                dot.style.opacity = button.classList.contains('active') ? '1' : '0';
+            }
+
+            // Update activeModifiers array
+            if (button.classList.contains('active')) {
+                if (!activeModifiers.includes(modifier)) {
+                    activeModifiers.push(modifier);
                 }
+            } else {
+                activeModifiers = activeModifiers.filter(m => m !== modifier);
+            }
+        });
+    });
+
+    // Send Custom Shortcut
+    if (sendCustomButton && customKeyInput) {
+        sendCustomButton.addEventListener('click', async () => {
+            // Send an empty string if the input is empty
+            const key = customKeyInput.value.toLowerCase().trim() || ''; 
+            if (key.length > 0 || activeModifiers.length > 0) {
+                await apiCall('/api/keyboard/shortcut', 'POST', {
+                    shortcut: key,
+                    modifiers: activeModifiers
+                });
+            }
+            // Clear the custom key input after sending
+            customKeyInput.value = '';
+        });
+    }
+
+    // Accordion functionality
+    const accordions = document.querySelectorAll('.group');
+    accordions.forEach(accordion => {
+        const button = accordion.querySelector('button');
+        
+        button?.addEventListener('click', () => {
+            const isCurrentlyActive = accordion.classList.contains('active');
+            
+            // Close all accordions
+            accordions.forEach(other => {
+                other.classList.remove('active');
             });
+
+            // Toggle current accordion
+            if (!isCurrentlyActive) {
+                accordion.classList.add('active');
+            }
         });
     });
 

@@ -12,7 +12,12 @@ def keyboard_shortcut():
     modifiers = data.get('modifiers', [])
 
     try:
-        if modifiers:
+        if shortcut == '' and modifiers:
+            for modifier in modifiers:
+                keyboard.press(modifier)
+            for modifier in reversed(modifiers):
+                keyboard.release(modifier)
+        elif modifiers:
             keyboard.press_and_release('+'.join(modifiers + [shortcut]))
         elif shortcut in current_app.input_manager.shortcuts:
             keyboard.press_and_release(current_app.input_manager.shortcuts[shortcut])
@@ -21,7 +26,7 @@ def keyboard_shortcut():
         return jsonify({'status': 'success'})
     except Exception as e:
         print(f"Error in keyboard shortcut: {e}")
-        return jsonify({'status': 'error', 'message': 'Invalid shortcut'})
+        return jsonify({'status': 'error', 'message': f'Error: {e}'})
 
 @bp.route('/api/keyboard/type', methods=['POST'])
 @login_required

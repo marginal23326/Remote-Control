@@ -263,132 +263,149 @@
             </section>
 
             <section id="keyboardSection" class="section hidden">
-                <div class="glass-card rounded-xl p-6">
+                <div class="glass-card rounded-xl p-4 sm:p-6">
                     <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Keyboard Controls</h2>
                     
                     <div class="space-y-4">
                         <!-- Common Actions -->
-                        <div class="accordion">
-                            <button class="w-full flex justify-between items-center p-4 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-colors">
-                                <span class="font-medium flex items-center gap-2">
+                        <div class="group">
+                            <button class="w-full flex justify-between items-center p-4 rounded-lg bg-gray-900 hover:bg-gray-700 transition-all duration-200">
+                                <span class="font-medium flex items-center gap-2 text-gray-200">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                     Common Actions
                                 </span>
-                                <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400 group-[.active]:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-                            <div class="accordion-content">
+                            <div class="overflow-hidden transition-all duration-200 max-h-0 group-[.active]:max-h-[1000px]">
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="copy">Copy</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="paste">Paste</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="cut">Cut</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="undo">Undo</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="space">Space</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 min-w-[80px]" data-key="copy">Copy</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 min-w-[80px]" data-key="paste">Paste</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 min-w-[80px]" data-key="cut">Cut</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 min-w-[80px]" data-key="undo">Undo</button>
                                 </div>
                             </div>
-                        </div> 
+                        </div>
 
-                        <!-- Navigation -->
-                        <div class="accordion">
-                            <button class="w-full flex justify-between items-center p-4 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-colors">
-                                <span class="font-medium flex items-center gap-2">
+                        <!-- Navigation Keys -->
+                        <div class="group">
+                            <button class="w-full flex justify-between items-center p-4 rounded-lg bg-gray-900 hover:bg-gray-700 transition-all duration-200">
+                                <span class="font-medium flex items-center gap-2 text-gray-200">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
                                     </svg>
                                     Navigation
                                 </span>
-                                <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400 group-[.active]:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-                            <div class="accordion-content">
+                            <div class="overflow-hidden transition-all duration-200 max-h-0 group-[.active]:max-h-[1000px]">
                                 <div class="p-4 space-y-6">
                                     <!-- Arrow keys -->
                                     <div class="flex flex-col items-center gap-2">
-                                        <button class="shortcut w-16 h-16 rounded-lg flex items-center justify-center text-blue-400 hover:text-blue-300" data-key="up">↑</button>
+                                        <button class="w-16 h-16 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 flex items-center justify-center" data-key="up">↑</button>
                                         <div class="flex gap-2">
-                                            <button class="shortcut w-16 h-16 rounded-lg flex items-center justify-center text-blue-400 hover:text-blue-300" data-key="left">←</button>
-                                            <button class="shortcut w-16 h-16 rounded-lg flex items-center justify-center text-blue-400 hover:text-blue-300" data-key="down">↓</button>
-                                            <button class="shortcut w-16 h-16 rounded-lg flex items-center justify-center text-blue-400 hover:text-blue-300" data-key="right">→</button>
+                                            <button class="w-16 h-16 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 flex items-center justify-center" data-key="left">←</button>
+                                            <button class="w-16 h-16 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 flex items-center justify-center" data-key="down">↓</button>
+                                            <button class="w-16 h-16 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200 flex items-center justify-center" data-key="right">→</button>
                                         </div>
                                     </div>
                                     <!-- Other navigation keys -->
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="home">Home</button>
-                                        <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="end">End</button>
-                                        <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="pgup">PgUp</button>
-                                        <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="pgdown">PgDn</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="home">Home</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="end">End</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="pageup">PgUp</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="pagedown">PgDn</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="delete">Delete</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="insert">Insert</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="tab">Tab</button>
+                                        <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="escape">Esc</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- System Keys -->
-                        <div class="accordion">
-                            <button class="w-full flex justify-between items-center p-4 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-colors">
-                                <span class="font-medium flex items-center gap-2">
+                        <div class="group">
+                            <button class="w-full flex justify-between items-center p-4 rounded-lg bg-gray-900 hover:bg-gray-700 transition-all duration-200">
+                                <span class="font-medium flex items-center gap-2 text-gray-200">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
                                     System Keys
                                 </span>
-                                <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                <svg class="w-5 h-5 text-gray-400 group-[.active]:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-                            <div class="accordion-content">
+                            <div class="overflow-hidden transition-all duration-200 max-h-0 group-[.active]:max-h-[1000px]">
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="win">Win</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="alt-tab">Alt+Tab</button>
-                                    <button class="shortcut px-4 py-3 rounded-lg text-blue-400 hover:text-blue-300" data-key="esc">Esc</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="win">Win</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="alt">Alt</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="ctrl">Ctrl</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="shift">Shift</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="alt-tab">Alt+Tab</button>
+                                    <button class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 active:scale-95 text-gray-200 hover:text-gray-100 transition-all duration-200" data-key="win+d">Win+D</button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Custom Shortcut -->
-                        <div class="mt-6 p-6 bg-blue-500/10 rounded-lg">
-                            <h3 class="text-lg font-medium mb-4 flex items-center gap-2">
+                        <div class="p-4 rounded-lg bg-gray-800">
+                            <h3 class="text-lg font-medium mb-4 flex items-center gap-2 text-gray-200">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                                 </svg>
                                 Custom Shortcut
                             </h3>
                             <div class="flex flex-wrap gap-4 mb-4">
-                                <label class="inline-flex items-center gap-2">
-                                    <input type="checkbox" class="modifier-key" value="ctrl">
-                                    <span>Ctrl</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2">
-                                    <input type="checkbox" class="modifier-key" value="win">
-                                    <span>Win</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2">
-                                    <input type="checkbox" class="modifier-key" value="alt">
-                                    <span>Alt</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2">
-                                    <input type="checkbox" class="modifier-key" value="shift">
-                                    <span>Shift</span>
-                                </label>
+                                <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="ctrl">
+                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    </div>
+                                    Ctrl
+                                </button>
+                                <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="win">
+                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    </div>
+                                    Win
+                                </button>
+                                <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="alt">
+                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    </div>
+                                    Alt
+                                </button>
+                                <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="shift">
+                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    </div>
+                                    Shift
+                                </button>
                             </div>
                             <div class="flex flex-col sm:flex-row gap-3">
-                                <input type="text" id="customKey" class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none" placeholder="Key (e.g. escape)">
-                                <button id="sendCustomShortcut" class="control-button bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 whitespace-nowrap">
+                                <input type="text" id="customKey" class="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-200 placeholder-gray-400 transition-all duration-200" placeholder="Additional key (optional)">
+                                <button id="sendCustomShortcut" class="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 flex items-center justify-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/>
                                     </svg>
-                                    <span>Send</span>
+                                    Send Custom Shortcut
                                 </button>
                             </div>
                         </div>
 
                         <!-- Text Input -->
-                        <div class="mt-6">
-                            <textarea id="textInput" class="w-full px-4 py-3 rounded-lg resize-none h-24" placeholder="Type text to send..."></textarea>
-                            <button id="sendText" class="control-button mt-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg w-full">Send Text</button>
+                        <div class="space-y-3">
+                            <textarea id="textInput" class="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-200 placeholder-gray-400 transition-all duration-200 resize-none h-24" placeholder="Type text to send..."></textarea>
+                            <button id="sendText" class="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200">
+                                Send Text
+                            </button>
                         </div>
                     </div>
                 </div>

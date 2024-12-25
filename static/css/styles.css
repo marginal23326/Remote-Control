@@ -127,33 +127,6 @@ body {
     }
 }
 
-.shortcut {
-    transition: all .2s ease;
-    min-width: 80px;
-    background: rgba(59,130,246,.1);
-    border: 1px solid rgba(59,130,246,.2)
-}
-
-.shortcut:hover {
-    background: rgba(59,130,246,.2);
-    border-color: rgba(59,130,246,.3)
-}
-
-.shortcut:active {
-    transform: scale(.95);
-    background: rgba(59,130,246,.3)
-}
-
-.accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height .3s cubic-bezier(.4,0,.2,1)
-}
-
-.accordion-content.active {
-    max-height: 1000px
-}
-
 input[type=range]::-webkit-slider-runnable-track {
     background: rgba(30,41,59,.8)
 }
@@ -171,27 +144,6 @@ input[type=text],input[type=number],textarea {
 input[type=text]:focus,input[type=number]:focus,textarea:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59,130,246,.2)
-}
-
-input[type=checkbox] {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 2px solid rgba(59,130,246,.4);
-    appearance: none;
-    -webkit-appearance: none;
-    outline: 0;
-    cursor: pointer;
-    transition: all .2s ease
-}
-
-input[type=checkbox]:checked {
-    background-color: #3b82f6;
-    border-color: #3b82f6;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='18px' height='18px'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
-    background-size: 12px;
-    background-position: center;
-    background-repeat: no-repeat
 }
 
 .connection-overlay {

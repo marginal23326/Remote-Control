@@ -1,7 +1,7 @@
 Remote-Control/
 ├── config/
 │   ├── auth_config.py        # Authentication configuration
-│   └── server_config.py      # Server configuration (secrets, etc.)
+│   └── server_config.py      # Server configuration
 ├── core/
 │   ├── input_manager.py      # InputManager class
 │   ├── stream_manager.py     # StreamManager class

@@ -146,7 +146,7 @@ The compiled executable will be available in the `dist` directory.
 
 - **Security**: This application is designed for trusted networks. Be **_very_** **cautious** about exposing it directly to the Internet; only use it on your trusted **local network**.
 - **Windows 10/11 Only**: Server-side functionality requires Windows due to system-specific dependencies.
-- **Permissions**: Administrator privilege is required for access certain restricted folders in the file browser; everything else don't require it.
+- **Permissions**: Administrator privilege is required to access certain restricted folders in the file browser; everything else doesn't require it.
 - **Default Credentials**: Change the default username (`admin`) and password (`password`) before deployment.
 
 ## 📄 License

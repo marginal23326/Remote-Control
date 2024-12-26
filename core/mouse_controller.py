@@ -1,5 +1,4 @@
-import ctypes
-from ctypes import wintypes, Structure, Union, POINTER, sizeof, pointer, c_ulong, c_long
+from ctypes import WinDLL, wintypes, Structure, Union, POINTER, sizeof, pointer, c_ulong, c_long
 
 # Windows API constants
 MOUSEEVENTF_MOVE = 0x0001
@@ -43,7 +42,7 @@ class INPUT(Structure):
 
 class MouseController:
     def __init__(self):
-        self.user32 = ctypes.WinDLL('user32', use_last_error=True)
+        self.user32 = WinDLL('user32', use_last_error=True)
         
         # Define SendInput
         self.user32.SendInput.argtypes = [wintypes.UINT, POINTER(INPUT), wintypes.INT]

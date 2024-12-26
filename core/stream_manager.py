@@ -29,8 +29,6 @@ class StreamManager:
 
     def update_settings(self, new_settings):
         with self.settings_lock:
-            needs_reset = False
-            
             for key in ['quality', 'resolution_percentage']:
                 if key in new_settings:
                     self.stream_settings[key] = max(1, min(100, int(new_settings[key])))

@@ -8,10 +8,10 @@ class SystemService:
     def get_system_info():
         disk = psutil.disk_usage('/')
         mac_address = next(
-            (addr.address for n, a in psutil.net_if_addrs().items() 
-             for addr in a if addr.family == psutil.AF_LINK 
-             and psutil.net_if_stats()[n].isup 
-             and any(a.address.startswith('192.168.') for a in a)), 
+            (addr.address for n, addrs in psutil.net_if_addrs().items()
+             for addr in addrs if addr.family == psutil.AF_LINK
+             and psutil.net_if_stats()[n].isup
+             and any(ip.address.startswith('192.168.') for ip in addrs)), 
             None
         )
         return {

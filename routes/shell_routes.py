@@ -2,7 +2,6 @@
 import uuid
 from flask import Blueprint, jsonify, request, current_app
 from flask_login import login_required
-from flask_socketio import emit
 
 bp = Blueprint('shell', __name__)
 

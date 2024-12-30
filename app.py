@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_login import LoginManager, UserMixin
 from config.server_config import Config
-from config.auth_config import USER_CONFIG
+from config.auth_config import load_user_config
 from core.input_manager import InputManager
 from core.audio_manager import AudioManager
 from core.stream_manager import StreamManager
@@ -48,7 +48,8 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        if user_id == USER_CONFIG['username']:
+        user_config = load_user_config()
+        if user_config and user_id == user_config['username']:
             return User(user_id)
         return None
 

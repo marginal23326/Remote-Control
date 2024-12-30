@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template, redirect, url_for
 from flask_login import login_user, logout_user, login_required
-from config.auth_config import USER_CONFIG
+from config.auth_config import load_user_config
 from werkzeug.security import check_password_hash
 from extensions import socketio
 
@@ -30,8 +30,10 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == USER_CONFIG['username'] and \
-           check_password_hash(USER_CONFIG['password_hash'], password):
+        user_config = load_user_config()
+
+        if user_config and username == user_config['username'] and \
+           check_password_hash(user_config['password_hash'], password):
             user = User(username)
             login_user(user)
             socketio.emit('auth_status', {'authenticated': True})

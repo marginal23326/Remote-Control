@@ -1,33 +1,34 @@
 Remote-Control/
 ├── config/
-│   ├── auth_config.py        # Authentication configuration
-│   └── server_config.py      # Server configuration
+│   ├── auth_config.py         # Authentication configuration
+│   └── server_config.py       # Server configuration
 ├── core/
-│   ├── input_manager.py      # InputManager class
-│   ├── stream_manager.py     # StreamManager class
-│   ├── shell_manager.py      # ShellManager class
-│   ├── audio_manager.py      # AudioManager class
-│   └── mouse_controller.py   # Windows-specific mouse control
+│   ├── input_manager.py       # InputManager class
+│   ├── stream_manager.py      # StreamManager class
+│   ├── shell_manager.py       # ShellManager class
+│   ├── audio_manager.py       # AudioManager class
+│   ├── keyboard_controller.py # Windows-specific keyboard control
+│   └── mouse_controller.py    # Windows-specific mouse control
 ├── routes/
-│   ├── auth_routes.py        # Login/logout routes
-│   ├── stream_routes.py      # Streaming related routes
-│   ├── system_routes.py      # System info
-│   ├── shell_routes.py       # Shell routes
-│   ├── input_routes.py       # Keyboard/mouse input routes
-│   └── file_routes.py        # File management routes
+│   ├── auth_routes.py         # Login/logout routes
+│   ├── stream_routes.py       # Streaming related routes
+│   ├── system_routes.py       # System info
+│   ├── shell_routes.py        # Shell routes
+│   ├── input_routes.py        # Keyboard/mouse input routes
+│   └── file_routes.py         # File management routes
 ├── services/
-│   ├── system_service.py     # System information functions
-│   └── file_service.py       # File operations functions
+│   ├── system_service.py      # System information functions
+│   └── file_service.py        # File operations functions
 ├── events/
 │   ├── __init__.py
-│   ├── connection_events.py  # Socket connection events
-│   ├── audio_events.py       # Audio-related socket events
-│   ├── auth_events.py        # Auth socket events
-│   ├── shell_events.py       # Shell socket events
-│   └── input_events.py       # Mouse/keyboard socket events
+│   ├── connection_events.py   # Socket connection events
+│   ├── audio_events.py        # Audio-related socket events
+│   ├── auth_events.py         # Auth socket events
+│   ├── shell_events.py        # Shell socket events
+│   └── input_events.py        # Mouse/keyboard socket events
 ├── utils/
 │   ├── __init__.py
-│   └── helpers.py            # Common utility functions
+│   └── helpers.py             # Common utility functions
 ├── static/
 │   ├── js/
 │   │   ├── modules/

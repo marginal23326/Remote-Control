@@ -1,6 +1,4 @@
 server.exe
-config/auth_config.py
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -137,3 +135,5 @@ server_supervisor.c
 server_supervisor.exe
 /node_modules
 _TODO.txt
+user_config.json
+*.zip

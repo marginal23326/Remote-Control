@@ -69,8 +69,8 @@ class StreamManager:
             screenshot = self.camera.grab()
             if screenshot is None:
                 return None
-            
-            _, buffer = cv2.imencode('.jpg', screenshot, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+
+            _, buffer = cv2.imencode('.png', screenshot)
             return base64.b64encode(buffer).decode()
         except Exception as e:
             print(f"Screenshot error: {e}")

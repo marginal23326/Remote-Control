@@ -116,7 +116,7 @@ _(Replace `<port>` with your desired port number, e.g., 5000)_
 
 Open your browser and navigate to:
 ```
-http://[server-ip]:5000
+http://<server-ip>:<port>
 ```
 
 Example:

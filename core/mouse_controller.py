@@ -1,4 +1,5 @@
-from ctypes import WinDLL, wintypes, Structure, Union, POINTER, sizeof, pointer, c_ulong, c_long
+from ctypes import WinDLL, Structure, Union, POINTER, sizeof, pointer, c_ulong, c_long
+from ctypes.wintypes import UINT, INT, BOOL
 
 # Windows API constants
 MOUSEEVENTF_MOVE = 0x0001
@@ -45,16 +46,16 @@ class MouseController:
         self.user32 = WinDLL('user32', use_last_error=True)
         
         # Define SendInput
-        self.user32.SendInput.argtypes = [wintypes.UINT, POINTER(INPUT), wintypes.INT]
-        self.user32.SendInput.restype = wintypes.UINT
+        self.user32.SendInput.argtypes = [UINT, POINTER(INPUT), INT]
+        self.user32.SendInput.restype = UINT
         
         # For getting cursor position
         self.user32.GetCursorPos.argtypes = [POINTER(POINT)]
-        self.user32.GetCursorPos.restype = wintypes.BOOL
+        self.user32.GetCursorPos.restype = BOOL
         
         # For screen metrics
-        self.user32.GetSystemMetrics.argtypes = [wintypes.INT]
-        self.user32.GetSystemMetrics.restype = wintypes.INT
+        self.user32.GetSystemMetrics.argtypes = [INT]
+        self.user32.GetSystemMetrics.restype = INT
         
         # Cache screen dimensions
         self.screen_width = self.user32.GetSystemMetrics(0)

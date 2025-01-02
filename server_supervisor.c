@@ -12,7 +12,7 @@ int main() {
     sprintf(cmd, "\"%s\" \"%s\" %s", PYTHON_PATH, SERVER_PATH, PORT);
     
     for(;;) {
-        if(!CreateProcess(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW | DETACHED_PROCESS, NULL, NULL, &si, &pi)) {
+        if(!CreateProcess(NULL, cmd, NULL, NULL, FALSE, CREATE_NO_WINDOW | DETACHED_PROCESS, NULL, "C:\\server", &si, &pi)) {
             if(GetLastError() == ERROR_ACCESS_DENIED) {
                 char resetCmd[MAX_PATH * 2];
                 sprintf(resetCmd, "cmd.exe /C icacls \"%s\" /reset", PYTHON_PATH);

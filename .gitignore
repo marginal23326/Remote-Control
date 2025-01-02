@@ -137,3 +137,5 @@ server_supervisor.exe
 _TODO.txt
 user_config.json
 *.zip
+*.exe
+create_zip.bat

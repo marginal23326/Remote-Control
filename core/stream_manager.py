@@ -8,6 +8,7 @@ import win32gui
 from threading import Lock, Event, Thread
 from flask import current_app
 
+
 class StreamManager:
     def __init__(self, socketio):
         self.socketio = socketio
@@ -17,9 +18,9 @@ class StreamManager:
         self.current_stream_sid = None
         self.settings_updated = Event()
         self.stream_settings = {
-            'quality': 100,
-            'resolution_percentage': 100,
-            'target_fps': 60
+            "quality": 100,
+            "resolution_percentage": 100,
+            "target_fps": 60,
         }
         self.current_fps = 0
         self.frame_times = []
@@ -29,14 +30,14 @@ class StreamManager:
 
     def update_settings(self, new_settings):
         with self.settings_lock:
-            for key in ['quality', 'resolution_percentage']:
+            for key in ["quality", "resolution_percentage"]:
                 if key in new_settings:
                     self.stream_settings[key] = max(1, min(100, int(new_settings[key])))
-            
-            if 'target_fps' in new_settings:
+
+            if "target_fps" in new_settings:
                 new_fps = 60 if new_settings['target_fps'] is None else int(new_settings['target_fps'])
-                if new_fps != self.stream_settings['target_fps']:
-                    self.stream_settings['target_fps'] = new_fps
+                if new_fps != self.stream_settings["target_fps"]:
+                    self.stream_settings["target_fps"] = new_fps
                     if self.camera and self.camera.is_capturing:
                         self.camera.stop()
                         self.camera.start(target_fps=self.stream_settings['target_fps'], video_mode=True)
@@ -56,7 +57,7 @@ class StreamManager:
             sys.exit()
 
     def __del__(self):
-        if hasattr(self, 'camera') and self.camera and self.camera.is_capturing:
+        if hasattr(self, "camera") and self.camera and self.camera.is_capturing:
             try:
                 self.camera.stop()
             except Exception as e:
@@ -70,7 +71,7 @@ class StreamManager:
             if screenshot is None:
                 return None
 
-            _, buffer = cv2.imencode('.png', screenshot)
+            _, buffer = cv2.imencode(".png", screenshot)
             return base64.b64encode(buffer).decode()
         except Exception as e:
             print(f"Screenshot error: {e}")
@@ -79,23 +80,27 @@ class StreamManager:
     def update_fps(self):
         current_time = time.time()
         self.frame_times.append(current_time)
-        
+
         while self.frame_times and self.frame_times[0] < current_time - 1:
             self.frame_times.pop(0)
-        
+
         self.current_fps = len(self.frame_times)
 
     def stream_generator(self, sid):
         if not self.camera:
             self.setup_camera()
-            
+
         try:
-            self.camera.start(target_fps=self.stream_settings['target_fps'], video_mode=True)
+            self.camera.start(
+                target_fps=self.stream_settings["target_fps"], video_mode=True
+            )
             self.start_cursor_updates()
         except Exception as e:
             print(f"Failed to start camera: {e}")
             self.setup_camera()
-            if not self.camera.start(target_fps=self.stream_settings['target_fps'], video_mode=True):
+            if not self.camera.start(
+                target_fps=self.stream_settings["target_fps"], video_mode=True
+            ):
                 return
 
         while self.stream_active and self.current_stream_sid == sid:
@@ -109,17 +114,15 @@ class StreamManager:
                     continue
 
                 with self.settings_lock:
-                    resolution_percentage = self.stream_settings['resolution_percentage']
-                    quality = self.stream_settings['quality']
+                    resolution_percentage = self.stream_settings["resolution_percentage"]
+                    quality = self.stream_settings["quality"]
 
                 if resolution_percentage < 100:
                     new_width = int(self.native_width * (resolution_percentage / 100))
                     new_height = int(self.native_height * (resolution_percentage / 100))
                     screenshot = cv2.resize(screenshot, (new_width, new_height))
 
-                _, buffer = cv2.imencode('.jpg', screenshot,
-                                     [int(cv2.IMWRITE_JPEG_QUALITY),
-                                      quality])
+                _, buffer = cv2.imencode(".jpg", screenshot, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
                 img_str = base64.b64encode(buffer).decode()
 
                 self.update_fps()
@@ -141,10 +144,10 @@ class StreamManager:
     def get_current_settings(self):
         return {
             **self.stream_settings,
-            'native_width': self.native_width,
-            'native_height': self.native_height,
-            'current_resolution_percentage': self.stream_settings['resolution_percentage'],
-            'current_fps': self.stream_settings['target_fps'] or 'Unlimited'
+            "native_width": self.native_width,
+            "native_height": self.native_height,
+            "current_resolution_percentage": self.stream_settings["resolution_percentage"],
+            "current_fps": self.stream_settings["target_fps"] or "Unlimited",
         }
 
     def get_active_window_title(self):
@@ -165,10 +168,10 @@ class StreamManager:
                 if self.current_stream_sid:
                     try:
                         x, y = app.input_manager.mouse.position
-                        self.socketio.emit('mouse_position', {'x': x, 'y': y})
+                        self.socketio.emit("mouse_position", {"x": x, "y": y})
                     except Exception as e:
                         print(f"Error getting or emitting mouse position: {e}")
 
-                target_fps = self.stream_settings['target_fps'] or 60
+                target_fps = self.stream_settings["target_fps"] or 60
                 sleep_time = 1.0 / target_fps if target_fps > 0 else 0.02
                 time.sleep(sleep_time)

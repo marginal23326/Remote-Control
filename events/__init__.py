@@ -5,6 +5,7 @@ from .input_events import register_input_events
 from .auth_events import register_auth_events
 from .shell_events import register_shell_events
 
+
 def register_events(socketio, input_manager, audio_manager, shell_manager):
     register_connection_events(socketio)
     register_audio_events(socketio, audio_manager)

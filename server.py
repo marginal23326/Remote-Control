@@ -5,6 +5,7 @@ from utils.helpers import get_local_ip
 from extensions import socketio
 from config.auth_config import USER_CONFIG, save_user_config
 
+
 def prompt_for_credentials():
     print("No user configuration found.")
     while True:
@@ -25,7 +26,8 @@ def prompt_for_credentials():
 
         return username, password
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     if USER_CONFIG is None:
         username, password = prompt_for_credentials()
         save_user_config(username, password)
@@ -48,4 +50,4 @@ if __name__ == '__main__':
     print(f"  http://{local_ip}:{port}")
     print("\nPress Ctrl+C to stop the server\n")
 
-    socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)

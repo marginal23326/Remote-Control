@@ -19,8 +19,10 @@ INPUT_MOUSE = 0
 # Define pointer type
 PUL = POINTER(c_ulong)
 
+
 class POINT(Structure):
     _fields_ = [("x", c_long), ("y", c_long)]
+
 
 class MOUSEINPUT(Structure):
     _fields_ = [
@@ -29,43 +31,43 @@ class MOUSEINPUT(Structure):
         ("mouseData", c_ulong),
         ("dwFlags", c_ulong),
         ("time", c_ulong),
-        ("dwExtraInfo", PUL)
+        ("dwExtraInfo", PUL),
     ]
+
 
 class INPUT_UNION(Union):
     _fields_ = [("mi", MOUSEINPUT)]
 
+
 class INPUT(Structure):
-    _fields_ = [
-        ("type", c_ulong),
-        ("ii", INPUT_UNION)
-    ]
+    _fields_ = [("type", c_ulong), ("ii", INPUT_UNION)]
+
 
 class MouseController:
     def __init__(self):
-        self.user32 = WinDLL('user32', use_last_error=True)
-        
+        self.user32 = WinDLL("user32", use_last_error=True)
+
         # Define SendInput
         self.user32.SendInput.argtypes = [UINT, POINTER(INPUT), INT]
         self.user32.SendInput.restype = UINT
-        
+
         # For getting cursor position
         self.user32.GetCursorPos.argtypes = [POINTER(POINT)]
         self.user32.GetCursorPos.restype = BOOL
-        
+
         # For screen metrics
         self.user32.GetSystemMetrics.argtypes = [INT]
         self.user32.GetSystemMetrics.restype = INT
-        
+
         # Cache screen dimensions
         self.screen_width = self.user32.GetSystemMetrics(0)
         self.screen_height = self.user32.GetSystemMetrics(1)
-        
+
         # Button mapping
         self.button_map = {
-            'left': (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP),
-            'right': (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
-            'middle': (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP)
+            "left": (MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP),
+            "right": (MOUSEEVENTF_RIGHTDOWN, MOUSEEVENTF_RIGHTUP),
+            "middle": (MOUSEEVENTF_MIDDLEDOWN, MOUSEEVENTF_MIDDLEUP),
         }
 
     def _send_input(self, input_struct):
@@ -74,7 +76,7 @@ class MouseController:
     def _to_windows_coordinates(self, x, y):
         return (
             int((x * 65536) // self.screen_width + 1),
-            int((y * 65536) // self.screen_height + 1)
+            int((y * 65536) // self.screen_height + 1),
         )
 
     @property
@@ -82,18 +84,18 @@ class MouseController:
         point = POINT()
         self.user32.GetCursorPos(pointer(point))
         return (point.x, point.y)
-    
+
     @position.setter
     def position(self, pos):
         x, y = int(pos[0]), int(pos[1])
-        
+
         # Ensure coordinates are within screen bounds
         x = max(0, min(x, self.screen_width - 1))
         y = max(0, min(y, self.screen_height - 1))
-        
+
         # Convert to Windows coordinates
         win_x, win_y = self._to_windows_coordinates(x, y)
-        
+
         self._send_mouse_event(dx=win_x, dy=win_y, flags=MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE)
 
     def _send_mouse_event(self, dx=0, dy=0, data=0, flags=0):

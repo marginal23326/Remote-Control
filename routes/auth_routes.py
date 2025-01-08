@@ -35,8 +35,8 @@ def login():
         password = request.form.get("password")
         user_config = load_user_config()
 
-        if user_config and username == user_config["username"]
-            and check_password_hash(user_config["password_hash"], password):
+        if (user_config and username == user_config["username"]
+            and check_password_hash(user_config["password_hash"], password)):
             user = User(username)
             login_user(user)
             socketio.emit("auth_status", {"authenticated": True})

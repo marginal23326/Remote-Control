@@ -1,7 +1,7 @@
 # server.py
 from app import create_app
 import sys
-from utils.helpers import get_local_ip
+from services.system_service import SystemService
 from extensions import socketio
 from config.auth_config import USER_CONFIG, save_user_config
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     port = int(sys.argv[1])
-    local_ip = get_local_ip()
+    local_ip = SystemService.get_lan_ip()
 
     app = create_app()
 

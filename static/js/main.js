@@ -9,9 +9,10 @@ import { initializeInputHandlers } from './modules/input.js';
 import { updateSystemInfo } from './modules/system.js';
 import { apiCall } from './modules/utils.js';
 import { initializeNavigation } from './modules/nav.js';
+import { initializeTaskManager } from './modules/task.js';
 
 function updateUIBasedOnAuthentication(isAuthenticated) {
-    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection'];
+    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection', 'taskManager'];
     sections.forEach(sectionId => {
         const section = document.getElementById(sectionId);
         section.classList.toggle('hidden', !isAuthenticated);
@@ -40,6 +41,7 @@ function updateUIBasedOnAuthentication(isAuthenticated) {
     initializeStream(sessionId, socket);
     initializeFileManagement();
     initializeInputHandlers(socket);
+    initializeTaskManager(socket);
 
     // Update system info on load
     updateSystemInfo();

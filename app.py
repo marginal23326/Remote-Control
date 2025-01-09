@@ -7,7 +7,8 @@ from core.audio_manager import AudioManager
 from core.stream_manager import StreamManager
 from core.shell_manager import ShellManager
 from core.file_manager import FileManager
-from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes, shell_routes
+from core.task_manager import TaskManager
+from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes, shell_routes, task_routes
 from events import register_events
 from extensions import socketio, init_app
 
@@ -28,12 +29,14 @@ def create_app():
     input_manager = InputManager()
     shell_manager = ShellManager()
     file_manager = FileManager()
+    task_manager = TaskManager()
 
     app.input_manager = input_manager
     app.audio_manager = audio_manager
     app.stream_manager = stream_manager
     app.shell_manager = shell_manager
     app.file_manager = file_manager
+    app.task_manager = task_manager
 
     # Register blueprints
     app.register_blueprint(auth_routes.bp)
@@ -42,9 +45,10 @@ def create_app():
     app.register_blueprint(file_routes.bp)
     app.register_blueprint(input_routes.bp)
     app.register_blueprint(shell_routes.bp)
+    app.register_blueprint(task_routes.bp)
 
     # Register socket event handlers
-    register_events(socketio, input_manager, audio_manager, shell_manager)
+    register_events(socketio, input_manager, audio_manager, shell_manager, task_manager)
 
     @login_manager.user_loader
     def load_user(user_id):

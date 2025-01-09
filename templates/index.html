@@ -79,11 +79,11 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="#taskManager" class="nav-link group nav-tab">
+                                <a href="#processSection" class="nav-link group nav-tab">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h4l2-4 3 8 2-4h5"/>
                                     </svg>
-                                    Task Manager
+                                    Processes
                                     <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
                                 </a>
                             </li>
@@ -541,15 +541,15 @@
                 </div>
             </section>
 
-            <section id="taskManager" class="section hidden">
+            <section id="processSection" class="section hidden">
                 <div class="glass-card rounded-xl p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Task Manager</h2>
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Processes</h2>
                     <div class="overflow-auto max-h-96">
                         <table class="min-w-full table-fixed">
                             <thead class="bg-gray-800/50 text-gray-300 sticky top-0">
                                 <tr>
-                                    <th class="w-3/4 px-4 py-2 text-left">Name</th>
-                                    <th class="w-1/4 px-4 py-2 text-left">PID</th>
+                                    <th data-column="name" class="w-3/4 px-4 py-2 text-left cursor-pointer">Name</th>
+                                    <th data-column="pid" class="w-1/4 px-4 py-2 text-left cursor-pointer">PID</th>
                                 </tr>
                             </thead>
                             <tbody id="taskList" class="bg-black/20 divide-y divide-gray-800/50">

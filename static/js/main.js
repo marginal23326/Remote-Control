@@ -12,7 +12,7 @@ import { initializeNavigation } from './modules/nav.js';
 import { initializeTaskManager } from './modules/task.js';
 
 function updateUIBasedOnAuthentication(isAuthenticated) {
-    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection', 'taskManager'];
+    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection', 'processSection'];
     sections.forEach(sectionId => {
         const section = document.getElementById(sectionId);
         section.classList.toggle('hidden', !isAuthenticated);

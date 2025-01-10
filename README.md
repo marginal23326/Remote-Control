@@ -49,6 +49,9 @@ A real-time remote control web application built with Flask and Socket.IO that e
 
 ## 🌳 Project Structure
 
+<details>
+  <summary>Click to expand/collapse the project structure</summary>
+
 ```
 Remote-Control/
 ├── config/
@@ -107,6 +110,8 @@ Remote-Control/
 ├── extensions.py                    # SocketIO initialization
 └── server.py                        # Main entry point
 ```
+
+</details>
 
 ## 🚀 Quick Start Guide
 

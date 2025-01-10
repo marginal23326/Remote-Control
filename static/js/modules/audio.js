@@ -59,7 +59,7 @@ class AudioManager {
             if (this.workletNode) {
                 this.cleanupWorklet();
             }
-            await this.audioContext.audioWorklet.addModule('/static/audio-worklet-processor.js');
+            await this.audioContext.audioWorklet.addModule('/static/js/modules/audio-worklet-processor.js');
         } catch (e) {
             console.error('Failed to add audio worklet module:', e);
             throw e;

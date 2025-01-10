@@ -36,6 +36,7 @@ Remote-Control/
 │   └── js/
 │       ├── modules/
 │       │   ├── audio.js            # AudioManager class
+│       │   ├── audio-worklet-processor.js
 │       │   ├── connection.js       # Socket.IO connection management
 │       │   ├── dom.js              # DOM manipulation utilities
 │       │   ├── file.js             # File management functions
@@ -46,7 +47,6 @@ Remote-Control/
 │       │   ├── system.js           # System information display
 │       │   ├── task.js             # Task manager functions
 │       │   └── utils.js            # General utility functions (like apiCall)
-│       ├── audio-worklet-processor.js
 │       └── main.js            	  # Main initialization and event handling
 ├── templates/
 │   ├── index.html

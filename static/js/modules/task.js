@@ -6,29 +6,66 @@ function initializeTaskManager(socket) {
     let selectedProcess = null;
     let currentSort = { column: 'name', order: 'asc' };
     let processes = [];
+    let expandedGroups = new Set();
 
     function renderTaskList(newProcesses) {
+        newProcesses.forEach(process => {
+            if (process.is_group) {
+                process.expanded = expandedGroups.has(process.pid);
+            }
+        });
+
         processes = newProcesses;
         sortProcesses(processes, currentSort.column, currentSort.order);
-        
+
         const fragment = document.createDocumentFragment();
         processes.forEach(process => {
             const row = document.createElement('tr');
             row.classList.add('hover:bg-gray-700/50', 'cursor-pointer');
-            
-            // Use dataset for easy process identification
             row.dataset.pid = process.pid;
-            
+
             if (selectedProcess && process.pid === selectedProcess.pid) {
                 row.classList.add('bg-blue-500/50');
             }
-            
+
+            const expandArrow = process.is_group 
+                ? `<span class="inline-block w-4 mr-2 cursor-pointer expand-arrow">${process.expanded ? '▼' : '▶'}</span>`
+                : '<span class="inline-block w-4 mr-2"></span>';
+
             row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${process.name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                    ${expandArrow}${process.name}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.cpu_percent.toFixed(1)}%</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.memory_usage.toFixed(1)} MB</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.pid}</td>
             `;
-            
+
             fragment.appendChild(row);
+
+            if (process.is_group && process.expanded && process.children) {
+                process.children.forEach(childProcess => {
+                    const childRow = document.createElement('tr');
+                    childRow.classList.add('hover:bg-gray-700/50', 'cursor-pointer', 'child-process');
+                    childRow.dataset.pid = childProcess.pid;
+                    childRow.dataset.parentPid = process.pid;
+
+                    if (selectedProcess && childProcess.pid === selectedProcess.pid) {
+                        childRow.classList.add('bg-blue-500/50');
+                    }
+
+                    childRow.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white pl-12">
+                            ${childProcess.name}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.cpu_percent.toFixed(1)}%</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.memory_usage.toFixed(1)} MB</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.pid}</td>
+                    `;
+
+                    fragment.appendChild(childRow);
+                });
+            }
         });
 
         taskList.innerHTML = '';
@@ -40,7 +77,7 @@ function initializeTaskManager(socket) {
             const valueA = a[column];
             const valueB = b[column];
             const modifier = order === 'asc' ? 1 : -1;
-            return typeof valueA === 'number' 
+            return typeof valueA === 'number'
                 ? (valueA - valueB) * modifier
                 : valueA.localeCompare(valueB) * modifier;
         });
@@ -91,15 +128,33 @@ function initializeTaskManager(socket) {
         }
     }
 
-    // Event Delegation for row clicks and context menu
     taskList.addEventListener('click', (event) => {
+        const expandArrow = event.target.closest('.expand-arrow');
+        if (expandArrow) {
+            const row = expandArrow.closest('tr');
+            const pid = parseInt(row.dataset.pid);
+            const process = processes.find(p => p.pid === pid);
+            
+            if (process && process.is_group) {
+                process.expanded = !process.expanded;
+                if (process.expanded) {
+                    expandedGroups.add(pid);
+                } else {
+                    expandedGroups.delete(pid);
+                }
+                renderTaskList(processes);
+                event.stopPropagation();
+                return;
+            }
+        }
+
         const row = event.target.closest('tr');
         if (!row) return;
 
         const pid = parseInt(row.dataset.pid);
-        selectedProcess = processes.find(p => p.pid === pid);
+        selectedProcess = processes.find(p => p.pid === pid) || 
+                         processes.flatMap(p => p.children || []).find(c => c.pid === pid);
         
-        // Update only the selection highlight
         taskList.querySelectorAll('tr').forEach(r => 
             r.classList.toggle('bg-blue-500/50', r.dataset.pid === String(pid))
         );
@@ -115,7 +170,6 @@ function initializeTaskManager(socket) {
         const pid = parseInt(row.dataset.pid);
         selectedProcess = processes.find(p => p.pid === pid);
         
-        // Update only the selection highlight
         taskList.querySelectorAll('tr').forEach(r => 
             r.classList.toggle('bg-blue-500/50', r.dataset.pid === String(pid))
         );
@@ -149,7 +203,16 @@ function initializeTaskManager(socket) {
     });
 
     // Socket events
-    socket.on('task_list', renderTaskList);
+    socket.on('task_list', (data) => {
+        // Update total usage
+        const totalCpuUsage = document.querySelector('#processSection th[data-column="cpu_percent"] .total-usage');
+        const totalMemoryUsage = document.querySelector('#processSection th[data-column="memory_usage"] .total-usage');
+
+        totalCpuUsage.textContent = `(${data.total_cpu_usage.toFixed(1)}%)`;
+        totalMemoryUsage.textContent = `(${data.total_memory_percentage.toFixed(1)}%)`;
+
+        renderTaskList(data.processes);
+    });
     socket.emit('task_poll');
 }
 

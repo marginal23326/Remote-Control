@@ -10,4 +10,4 @@ def register_task_events(socketio, task_manager):
         while True:
             processes = task_manager.get_processes()
             emit('task_list', processes)
-            time.sleep(5)
+            time.sleep(2)

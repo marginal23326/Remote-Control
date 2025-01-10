@@ -548,7 +548,11 @@
                         <table class="min-w-full table-fixed">
                             <thead class="bg-gray-800/50 text-gray-300 sticky top-0">
                                 <tr>
-                                    <th data-column="name" class="w-3/4 px-4 py-2 text-left cursor-pointer">Name</th>
+                                    <th data-column="name" class="w-2/4 px-4 py-2 text-left cursor-pointer">Name</th>
+                                    <th data-column="cpu_percent" class="w-1/4 px-4 py-2 text-left cursor-pointer">
+                                        CPU <span class="total-usage text-gray-400"></span></th>
+                                    <th data-column="memory_usage" class="w-1/4 px-4 py-2 text-left cursor-pointer">
+                                        Memory <span class="total-usage text-gray-400"></span></th>
                                     <th data-column="pid" class="w-1/4 px-4 py-2 text-left cursor-pointer">PID</th>
                                 </tr>
                             </thead>

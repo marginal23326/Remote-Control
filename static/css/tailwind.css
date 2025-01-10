@@ -726,6 +726,10 @@ video {
   margin-left: 0.5rem;
 }
 
+.mr-1 {
+  margin-right: 0.25rem;
+}
+
 .mr-2 {
   margin-right: 0.5rem;
 }
@@ -748,6 +752,10 @@ video {
 
 .block {
   display: block;
+}
+
+.inline-block {
+  display: inline-block;
 }
 
 .flex {
@@ -884,10 +892,6 @@ video {
 
 .w-3 {
   width: 0.75rem;
-}
-
-.w-3\/4 {
-  width: 75%;
 }
 
 .w-4 {
@@ -1598,6 +1602,10 @@ video {
 .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
+}
+
+.pl-12 {
+  padding-left: 3rem;
 }
 
 .text-left {

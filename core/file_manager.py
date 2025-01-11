@@ -69,24 +69,30 @@ class FileManager:
                 "name": item,
                 "path": full_path,
                 "is_dir": is_dir,
-                "no_access": is_dir and not self.check_dir_access(full_path),
+                "no_access": is_dir and not self.check_dir_access(full_path)
             }
+
+            if not is_dir:
+                try:
+                    stats = os.stat(full_path)
+                    file_info.update({
+                        "size": stats.st_size,
+                        "last_modified": datetime.datetime.fromtimestamp(
+                            stats.st_mtime
+                        ).isoformat()
+                    })
+                except (OSError, PermissionError):
+                    file_info.update({
+                        "size": 0,
+                        "last_modified": None
+                    })
+
             file_list.append(file_info)
 
         file_list.sort(
             key=lambda x: (not x["is_dir"], x["no_access"], x["name"].lower())
         )
         return file_list
-
-    def get_file_info(self, file_path):
-        self.validate_path(file_path)
-        file_stats = os.stat(file_path)
-        return {
-            "size": file_stats.st_size,
-            "last_modified": datetime.datetime.fromtimestamp(
-                file_stats.st_mtime
-            ).isoformat(),
-        }
 
     @contextmanager
     def prepare_download(self, paths):

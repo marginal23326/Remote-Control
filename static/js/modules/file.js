@@ -14,6 +14,18 @@ class FileManager {
         this.dragStartElement = null;
         this.scrollAnimationFrame = null;
         this.currentScrollSpeed = 0;
+        this.filteredRows = new Map();
+        this.elements = {
+            fileList: null,
+            currentPath: null,
+            searchInput: null
+        };
+    }
+
+    initializeElements() {
+        this.elements.fileList = document.getElementById('fileList');
+        this.elements.currentPath = document.getElementById('currentPath');
+        this.elements.searchInput = document.getElementById('searchInput');
     }
 
     initializeButtons() {
@@ -323,13 +335,15 @@ class FileManager {
 
     async updateFileList(items, highlightPath = null) {
         const fragment = document.createDocumentFragment();
-
+        
         if (this.currentPath !== '/') {
-            const upRow = this.createUpDirectoryRow(this.currentPath, () => this.listFiles(this.getParentPath()));
+            const upRow = this.createUpDirectoryRow(this.currentPath, () => 
+                this.listFiles(this.getParentPath())
+            );
             fragment.appendChild(upRow);
         }
 
-        const createRowPromises = items.map(async (item) => {
+        items.forEach(item => {
             const row = this.createTableRow(item, item.no_access ? CLASSES.noAccess : []);
             
             row.addEventListener('mousedown', (e) => this.handleItemSelection(row, item, e));
@@ -342,12 +356,10 @@ class FileManager {
             if (item.is_dir) {
                 cells.push('-', '-');
             } else {
-                try {
-                    const stats = await apiCall(`/api/file_info?path=${encodeURIComponent(item.path)}`);
-                    cells.push(formatFileSize(stats.size), formatDate(stats.last_modified));
-                } catch {
-                    cells.push('Error', 'Error');
-                }
+                cells.push(
+                    formatFileSize(item.size), 
+                    item.last_modified ? formatDate(item.last_modified) : '-'
+                );
             }
 
             cells.forEach(content => row.appendChild(this.createCell(content)));
@@ -357,25 +369,31 @@ class FileManager {
                 setTimeout(() => row.classList.remove(CLASSES.highlight), 1500);
             }
 
-            return row;
+            fragment.appendChild(row);
         });
 
-        const rows = await Promise.all(createRowPromises);
-        rows.forEach(row => fragment.appendChild(row));
-
-        const fileList = document.getElementById('fileList');
-        fileList.innerHTML = '';
-        fileList.appendChild(fragment);
+        this.elements.fileList.innerHTML = '';
+        this.elements.fileList.appendChild(fragment);
         
         this.currentFileList = items;
+        this.filteredRows.clear();
         this.filterFiles('');
     }
 
     filterFiles(searchTerm) {
         const normalizedSearch = searchTerm.toLowerCase();
-        document.querySelectorAll('#fileList tr[data-path]').forEach(row => {
-            const fileName = row.querySelector('td:first-child > div').textContent.toLowerCase();
-            row.style.display = fileName.includes(normalizedSearch) ? '' : 'none';
+        if (!this.filteredRows.has(normalizedSearch)) {
+            const visibilityMap = new Map();
+            this.elements.fileList.querySelectorAll('tr[data-path]').forEach(row => {
+                const fileName = row.querySelector('td:first-child > div').textContent.toLowerCase();
+                visibilityMap.set(row, fileName.includes(normalizedSearch));
+            });
+            this.filteredRows.set(normalizedSearch, visibilityMap);
+        }
+        
+        const visibilityMap = this.filteredRows.get(normalizedSearch);
+        visibilityMap.forEach((isVisible, row) => {
+            row.style.display = isVisible ? '' : 'none';
         });
     }
 
@@ -595,7 +613,7 @@ initializeEventListeners() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     this.filterFiles(e.target.value);
-                }, 300);
+                }, 50);
             });
 
             // Prevent file selection when clicking in search input
@@ -664,10 +682,9 @@ initializeEventListeners() {
     }
 
     initialize() {
+        this.initializeElements();
         this.initializeButtons();
-        
         this.dropZone = new DropZone('dropZone', this.handleFileUpload.bind(this));
-        
         this.initializeEventListeners();
         this.listFiles(this.currentPath);
     }

@@ -39,15 +39,6 @@ def list_files():
     current_app.file_manager.validate_path(root_dir)
     return jsonify(current_app.file_manager.get_directory_contents(root_dir))
 
-
-@bp.route("/api/file_info")
-@login_required
-@handle_errors
-def file_info():
-    file_path = request.args.get("path")
-    return success_response(current_app.file_manager.get_file_info(file_path))
-
-
 @bp.route("/api/download")
 @login_required
 @handle_errors

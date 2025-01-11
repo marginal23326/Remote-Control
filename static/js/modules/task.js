@@ -33,12 +33,12 @@ function initializeTaskManager(socket) {
                 : '<span class="inline-block w-4 mr-2"></span>';
 
             row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                <td class="px-4 py-1 whitespace-nowrap text-sm font-medium text-white">
                     ${expandArrow}${process.name}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.cpu_percent.toFixed(1)}%</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.memory_usage.toFixed(1)} MB</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${process.pid}</td>
+                <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${process.cpu_percent.toFixed(1)}%</td>
+                <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${process.memory_usage.toFixed(1)} MB</td>
+                <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${process.pid}</td>
             `;
 
             fragment.appendChild(row);
@@ -55,12 +55,12 @@ function initializeTaskManager(socket) {
                     }
 
                     childRow.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white pl-16">
+                        <td class="px-4 py-1 whitespace-nowrap text-sm font-medium text-white pl-16">
                             ${childProcess.name}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.cpu_percent.toFixed(1)}%</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.memory_usage.toFixed(1)} MB</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.pid}</td>
+                        <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${childProcess.cpu_percent.toFixed(1)}%</td>
+                        <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${childProcess.memory_usage.toFixed(1)} MB</td>
+                        <td class="px-4 py-1 whitespace-nowrap text-sm text-gray-500">${childProcess.pid}</td>
                     `;
 
                     fragment.appendChild(childRow);
@@ -108,7 +108,7 @@ function initializeTaskManager(socket) {
             
             menuElement = document.createElement('div');
             menuElement.classList.add('context-menu');
-            menuElement.style.position = 'absolute';
+            menuElement.style.position = 'fixed';
             menuElement.style.left = `${x}px`;
             menuElement.style.top = `${y}px`;
             menuElement.innerHTML = `

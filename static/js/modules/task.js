@@ -55,7 +55,7 @@ function initializeTaskManager(socket) {
                     }
 
                     childRow.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white pl-12">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white pl-16">
                             ${childProcess.name}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${childProcess.cpu_percent.toFixed(1)}%</td>
@@ -70,6 +70,16 @@ function initializeTaskManager(socket) {
 
         taskList.innerHTML = '';
         taskList.appendChild(fragment);
+        const endTaskButton = document.getElementById('endTaskButton');
+        if (!endTaskButton.hasListener) {
+            endTaskButton.addEventListener('click', () => {
+                if (selectedProcess) {
+                    killProcess(selectedProcess.pid);
+                    document.getElementById('endTaskContainer').classList.add('hidden');
+                }
+            });
+            endTaskButton.hasListener = true;
+        }
     }
 
     function sortProcesses(processes, column, order) {
@@ -158,8 +168,25 @@ function initializeTaskManager(socket) {
         taskList.querySelectorAll('tr').forEach(r => 
             r.classList.toggle('bg-blue-500/50', r.dataset.pid === String(pid))
         );
+
+        const endTaskContainer = document.getElementById('endTaskContainer');
+        if (selectedProcess) {
+            endTaskContainer.classList.remove('hidden');
+        } else {
+            endTaskContainer.classList.add('hidden');
+        }
         
         contextMenu.hide();
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#taskList') && !event.target.closest('#endTaskContainer')) {
+            selectedProcess = null;
+            taskList.querySelectorAll('tr').forEach(r => 
+                r.classList.remove('bg-blue-500/50')
+            );
+            document.getElementById('endTaskContainer').classList.add('hidden');
+        }
     });
 
     taskList.addEventListener('contextmenu', (event) => {

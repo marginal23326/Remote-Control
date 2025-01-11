@@ -139,3 +139,6 @@ user_config.json
 *.zip
 *.exe
 create_zip.bat
+config/user_configA.json
+server_supervisor_exe.c
+server_supervisor.c

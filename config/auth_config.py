@@ -1,9 +1,13 @@
 # config/auth_config.py
 import os
+import sys
 from werkzeug.security import generate_password_hash
 
-USER_CONFIG_FILE = "user_config.json"
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
+USER_CONFIG_FILE = resource_path("user_config.json")
 
 def load_user_config():
     if not os.path.exists(USER_CONFIG_FILE):
@@ -13,7 +17,6 @@ def load_user_config():
         import json
 
         return json.load(f)
-
 
 def save_user_config(username, password):
     user_config = {
@@ -25,6 +28,4 @@ def save_user_config(username, password):
 
         json.dump(user_config, f)
 
-
-# Load the user config at startup
 USER_CONFIG = load_user_config()

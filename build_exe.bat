@@ -11,7 +11,7 @@ pyinstaller --name server --onefile -w ^
     --hidden-import extensions ^
     --hidden-import engineio.async_drivers.threading ^
     server.py
-pause
+
 set /p delete_build="Do you want to delete the 'build' folder? (y/n): "
 if /i "%delete_build%"=="y" (
     rmdir /s /q build

@@ -79,9 +79,9 @@ body {
 
 .stream-container .cursor-overlay {
     position: absolute;
-    width: 11px;
-    height: 16px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0v14l3.5-3L6 16.2l1.9-1-2.7-4.9 4.8-.5z' style='fill:%23fff'/%3E%3C/svg%3E")no-repeat;
+    width: 11.3px;
+    height: 18px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-0.3 -0.7 11 17.3'%3E%3Cpath d='M0 0v14l3.5-3L6 16.2l1.9-1-2.7-4.9 4.8-.5z' style='fill:%23fff;stroke:%23000;stroke-width:0.6'/%3E%3C/svg%3E") no-repeat;
     background-size: contain;
     pointer-events: none;
     z-index: 9998

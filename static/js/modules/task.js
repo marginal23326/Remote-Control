@@ -231,7 +231,6 @@ function initializeTaskManager(socket) {
 
     // Socket events
     socket.on('task_list', (data) => {
-        // Update total usage
         const totalCpuUsage = document.querySelector('#processSection th[data-column="cpu_percent"] .total-usage');
         const totalMemoryUsage = document.querySelector('#processSection th[data-column="memory_usage"] .total-usage');
 
@@ -240,7 +239,18 @@ function initializeTaskManager(socket) {
 
         renderTaskList(data.processes);
     });
-    socket.emit('task_poll');
+
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('.nav-link');
+        if (!link) return;
+
+        const targetSection = link.getAttribute('href').substring(1);
+        socket.emit(targetSection === 'processSection' ? 'task_poll_start' : 'task_poll_stop');
+    });
+
+    if (!document.getElementById('processSection')?.classList.contains('hidden')) {
+        socket.emit('task_poll_start');
+    }
 }
 
 export { initializeTaskManager };

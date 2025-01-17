@@ -18,5 +18,6 @@ def keyboard_shortcut():
 @bp.route("/api/keyboard/type", methods=["POST"])
 @login_required
 def keyboard_type():
-    success = current_app.input_manager.type_text(request.json.get("text"))
+    text = request.json.get("text", "")
+    success = current_app.input_manager.type_text(text) if len(text) <= 1 else current_app.input_manager.paste_text(text)
     return jsonify({"status": "success" if success else "error"})

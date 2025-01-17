@@ -657,8 +657,8 @@ initializeEventListeners() {
 
         // Global keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Ignore if we're in an input field
-            if (e.target.tagName === 'INPUT') return;
+            // Ignore if we're in an input field or a textarea
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
             // Ctrl+A or Cmd+A to select all
             if ((e.ctrlKey || e.metaKey) && e.key === 'a') {

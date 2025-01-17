@@ -80,4 +80,312 @@ const CLASSES = {
     defaultHover: 'hover:bg-gray-700/50'
 };
 
-export { apiCall, formatFileSize, formatDate, SVG_TEMPLATES, CLASSES }; 
+class SelectionManager {
+    constructor(config) {
+        this.selectedItems = new Set();
+        this.lastSelectedItem = null;
+        this.selectionAnchor = null;
+        this.isDragging = false;
+        this.dragStartElement = null;
+        this.scrollAnimationFrame = null;
+        this.currentScrollSpeed = 0;
+        this.config = {
+            containerSelector: '',
+            itemSelector: 'tr',
+            selectedClass: 'bg-blue-500/50',
+            defaultHoverClass: 'hover:bg-gray-700/50',
+            selectedHoverClass: 'hover:bg-blue-700/50',
+            disabledClass: 'cursor-not-allowed opacity-50',
+            getItemId: (element) => element.dataset.id,
+            isItemSelectable: (element) => !element.classList.contains('cursor-not-allowed'),
+            onSelectionChange: () => {},
+            ...config
+        };
+    }
+
+    initialize() {
+        const container = document.querySelector(this.config.containerSelector);
+        if (!container) return;
+
+        container.addEventListener('mousedown', (e) => {
+            const item = e.target.closest(this.config.itemSelector);
+            if (item && this.config.getItemId(item)) {
+                if (e.button === 0) { // Left click
+                    this.handleItemSelection(item, e);
+                    this.handleDragStart(e, item);
+                }
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (this.isDragging) {
+                this.handleDragMove(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (this.isDragging) {
+                this.handleDragEnd();
+            }
+        });
+
+        // Global keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                e.preventDefault();
+                const container = document.querySelector(this.config.containerSelector);
+                if (!container) return;
+
+                const selectableItems = Array.from(container.querySelectorAll(this.config.itemSelector))
+                    .filter(item => this.config.isItemSelectable(item));
+                
+                this.clearSelection();
+                selectableItems.forEach(item => this.toggleItemSelection(item, true));
+            }
+        });
+    }
+
+    handleItemSelection(item, event) {
+        if (!this.config.isItemSelectable(item)) return;
+
+        if (event.shiftKey) {
+            if (!this.selectionAnchor) {
+                this.selectionAnchor = item;
+                this.toggleItemSelection(item, true);
+            } else {
+                this.handleRangeSelection(item, this.selectionAnchor);
+            }
+            this.lastSelectedItem = item;
+        } else if (event.ctrlKey || event.metaKey) {
+            this.toggleItemSelection(item, !this.selectedItems.has(item));
+            this.lastSelectedItem = item;
+            this.selectionAnchor = item;
+        } else {
+            if (this.selectedItems.size === 1 && this.selectedItems.has(item)) {
+                this.toggleItemSelection(item, false);
+                this.lastSelectedItem = null;
+                this.selectionAnchor = null;
+            } else {
+                this.clearSelection();
+                this.toggleItemSelection(item, true);
+                this.lastSelectedItem = item;
+                this.selectionAnchor = item;
+            }
+        }
+
+        this.config.onSelectionChange(this.getSelectedItems());
+    }
+
+    notifyItemsUpdate() {
+        const currentSelectionIds = Array.from(this.selectedItems).map(item => this.config.getItemId(item));
+        
+        const currentAnchorItemId = this.selectionAnchor ? this.config.getItemId(this.selectionAnchor) : null;
+
+        this.clearSelection();
+        const container = document.querySelector(this.config.containerSelector);
+        if (!container) return;
+
+        const items = Array.from(container.querySelectorAll(this.config.itemSelector));
+
+        currentSelectionIds.forEach(id => {
+            const item = items.find(item => this.config.getItemId(item) === id);
+            if (item) {
+                this.toggleItemSelection(item, true);
+            }
+        });
+
+        if (currentAnchorItemId) {
+            this.selectionAnchor = items.find(item => this.config.getItemId(item) === currentAnchorItemId);
+        }
+    }
+
+    handleDragStart(event, item) {
+        if (!this.config.isItemSelectable(item)) return;
+        if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
+
+        this.isDragging = true;
+        this.dragStartElement = item;
+
+        if (!this.selectedItems.has(item)) {
+            this.clearSelection();
+            this.selectionAnchor = item;
+            this.toggleItemSelection(item, true);
+        }
+
+        event.preventDefault();
+    }
+
+    handleDragMove(event) {
+        if (!this.isDragging || !this.dragStartElement) return;
+
+        const container = document.querySelector(this.config.containerSelector);
+        const rect = container.getBoundingClientRect();
+        const mouseY = event.clientY;
+
+        const items = Array.from(container.querySelectorAll(this.config.itemSelector))
+            .filter(item => this.config.isItemSelectable(item));
+
+        let targetItem = null;
+        for (const item of items) {
+            const itemRect = item.getBoundingClientRect();
+            if (mouseY >= itemRect.top && mouseY <= itemRect.bottom) {
+                targetItem = item;
+                break;
+            }
+        }
+
+        if (targetItem) {
+            this.handleRangeSelection(targetItem, this.dragStartElement);
+            this.lastSelectedItem = targetItem;
+        }
+
+        const scrollThreshold = 60;
+        const maxScrollSpeed = 15;
+        const scrollContainer = container.closest('.overflow-auto');
+
+        if (scrollContainer) {
+            const containerRect = scrollContainer.getBoundingClientRect();
+
+            if (mouseY < containerRect.top + scrollThreshold) {
+                const distance = mouseY - containerRect.top;
+                this.currentScrollSpeed = -maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
+            } else if (mouseY > containerRect.bottom - scrollThreshold) {
+                const distance = containerRect.bottom - mouseY;
+                this.currentScrollSpeed = maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
+            } else {
+                this.currentScrollSpeed = 0;
+            }
+
+            if (this.currentScrollSpeed !== 0) {
+                this.startScrollAnimation(scrollContainer);
+            }
+        }
+    }
+
+    handleDragEnd() {
+        this.isDragging = false;
+        this.dragStartElement = null;
+        this.currentScrollSpeed = 0;
+        if (this.scrollAnimationFrame) {
+            cancelAnimationFrame(this.scrollAnimationFrame);
+            this.scrollAnimationFrame = null;
+        }
+        this.config.onSelectionChange(this.getSelectedItems());
+    }
+
+    startScrollAnimation(scrollContainer) {
+        if (this.scrollAnimationFrame) return;
+
+        const animate = () => {
+            if (!this.isDragging || this.currentScrollSpeed === 0) {
+                this.scrollAnimationFrame = null;
+                return;
+            }
+
+            scrollContainer.scrollTop += this.currentScrollSpeed;
+            this.scrollAnimationFrame = requestAnimationFrame(animate);
+        };
+
+        this.scrollAnimationFrame = requestAnimationFrame(animate);
+    }
+
+    handleRangeSelection(item, anchorItem) {
+        const container = document.querySelector(this.config.containerSelector);
+        const items = Array.from(container.querySelectorAll(this.config.itemSelector))
+            .filter(item => this.config.isItemSelectable(item));
+
+        const currentIndex = items.indexOf(item);
+        const anchorIndex = items.indexOf(anchorItem);
+
+        if (currentIndex === -1 || anchorIndex === -1) return;
+
+        this.clearSelection();
+
+        const start = Math.min(currentIndex, anchorIndex);
+        const end = Math.max(currentIndex, anchorIndex);
+
+        items.slice(start, end + 1).forEach(item => this.toggleItemSelection(item, true));
+    }
+
+    clearSelection() {
+        this.selectedItems.forEach(item => this.toggleItemSelection(item, false));
+        this.selectedItems.clear();
+        this.lastSelectedItem = null;
+        this.config.onSelectionChange(this.getSelectedItems());
+    }
+
+    getSelectedItems() {
+        return Array.from(this.selectedItems);
+    }
+
+    toggleItemSelection(item, add) {
+        item.classList.toggle(this.config.selectedClass, add);
+        item.classList.toggle(this.config.defaultHoverClass, !add);
+        if (add) {
+            this.selectedItems.add(item);
+        } else {
+            this.selectedItems.delete(item);
+        }
+        this.updateItemHover(item);
+    }
+
+    updateItemHover(item) {
+        const isSelected = this.selectedItems.has(item);
+        const isHovered = item.dataset.hovered === 'true';
+        item.classList.toggle(this.config.selectedHoverClass, isSelected && isHovered);
+    }
+}
+
+// Context menu manager
+class ContextMenuManager {
+    constructor(config) {
+        this.menuElement = null;
+        this.config = {
+            menuClass: 'context-menu',
+            menuItemClass: 'px-4 py-2 text-white hover:bg-gray-600 cursor-pointer',
+            getMenuItems: () => [],
+            ...config
+        };
+    }
+
+    hide() {
+        if (this.menuElement) {
+            this.menuElement.remove();
+            this.menuElement = null;
+        }
+    }
+
+    show(x, y, context) {
+        this.hide();
+        
+        const items = this.config.getMenuItems(context);
+        if (!items.length) return;
+
+        this.menuElement = document.createElement('div');
+        this.menuElement.classList.add(this.config.menuClass);
+        this.menuElement.style.position = 'fixed';
+        this.menuElement.style.left = `${x}px`;
+        this.menuElement.style.top = `${y}px`;
+        
+        const ul = document.createElement('ul');
+        ul.className = 'bg-gray-700 border border-gray-600 rounded-lg py-2';
+        
+        items.forEach(item => {
+            const li = document.createElement('li');
+            li.className = this.config.menuItemClass;
+            li.textContent = item.label;
+            li.addEventListener('click', () => {
+                item.action();
+                this.hide();
+            });
+            ul.appendChild(li);
+        });
+
+        this.menuElement.appendChild(ul);
+        document.body.appendChild(this.menuElement);
+    }
+}
+
+export { apiCall, formatFileSize, formatDate, SVG_TEMPLATES, CLASSES, SelectionManager, ContextMenuManager };

@@ -44,15 +44,17 @@ def list_files():
 @handle_errors
 def download_file():
     paths = request.args.getlist("paths[]")
-
-    with current_app.file_manager.prepare_download(paths) as (file_path, filename):
-        return send_from_directory(
-            os.path.dirname(file_path),
-            os.path.basename(file_path),
-            as_attachment=True,
-            download_name=filename,
-        )
-
+    
+    try:
+        with current_app.file_manager.prepare_download(paths) as (file_path, filename):
+            return send_from_directory(
+                os.path.dirname(file_path),
+                os.path.basename(file_path),
+                as_attachment=True,
+                download_name=filename,
+            )
+    except PermissionError:
+        return "Access denied", 403
 
 @bp.route("/api/upload", methods=["POST"])
 @login_required

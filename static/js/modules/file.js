@@ -1,25 +1,60 @@
-import { apiCall, SVG_TEMPLATES, CLASSES, formatFileSize, formatDate } from './utils.js';
+import { apiCall, SVG_TEMPLATES, CLASSES, formatFileSize, formatDate, SelectionManager, ContextMenuManager } from './utils.js';
 import { LoadingButton } from './dom.js';
 
 class FileManager {
     constructor() {
         this.currentPath = '/';
-        this.selectedItems = new Set();
         this.currentFileList = [];
-        this.lastSelectedItem = null;
-        this.selectionAnchor = null;
         this.buttons = {};
         this.dropZone = null;
-        this.isDragging = false;
-        this.dragStartElement = null;
-        this.scrollAnimationFrame = null;
-        this.currentScrollSpeed = 0;
         this.filteredRows = new Map();
         this.elements = {
             fileList: null,
             currentPath: null,
             searchInput: null
         };
+        this.selectionManager = new SelectionManager({
+            containerSelector: '#fileList',
+            itemSelector: 'tr',
+            getItemId: (element) => element.dataset.path,
+            isItemSelectable: (element) => !element.classList.contains(...CLASSES.noAccess),
+            onSelectionChange: () => this.updateFileOperationsUI()
+        });
+        this.contextMenu = new ContextMenuManager({
+            getMenuItems: () => {
+                const selectedItems = this.selectionManager.getSelectedItems();
+                if (!selectedItems.length) return [];
+
+                const items = [];
+                const hasDirectories = selectedItems.some(item => item.dataset.isDir === 'true');
+                const singleItem = selectedItems.length === 1;
+
+                if (!hasDirectories) {
+                    items.push({
+                        label: 'Download',
+                        action: () => this.handleDownload(selectedItems)
+                    });
+                }
+
+                if (singleItem) {
+                    items.push({
+                        label: 'Rename',
+                        action: () => {
+                            document.getElementById('renameInput').value = 
+                                selectedItems[0].querySelector('td:first-child > div').textContent.trim();
+                            document.getElementById('renameInput').focus();
+                        }
+                    });
+                }
+
+                items.push({
+                    label: 'Delete',
+                    action: () => this.handleDelete(selectedItems)
+                });
+
+                return items;
+            }
+        });
     }
 
     initializeElements() {
@@ -46,12 +81,6 @@ class FileManager {
                 })
                 .filter(Boolean)
         );
-    }
-
-    clearSelection() {
-        this.selectedItems.forEach(item => this.toggleItemSelection(item, false));
-        this.selectedItems.clear();
-        this.lastSelectedItem = null;
     }
 
     async handleFileUpload(files, isDropZone = false) {
@@ -115,7 +144,7 @@ class FileManager {
         ['mouseover', 'mouseout'].forEach(event => {
             row.addEventListener(event, () => {
                 row.dataset.hovered = event === 'mouseover';
-                this.updateRowHover(row);
+                this.selectionManager.updateItemHover(row);
             });
         });
 
@@ -131,8 +160,8 @@ class FileManager {
     }
 
     updateFileOperationsUI() {
-        const selectionCount = this.selectedItems.size;
-        const hasDirectorySelected = Array.from(this.selectedItems).some(item => 
+        const selectionCount = this.selectionManager.selectedItems.size;
+        const hasDirectorySelected = Array.from(this.selectionManager.selectedItems).some(item => 
             item.dataset.isDir === 'true'
         );
 
@@ -151,176 +180,11 @@ class FileManager {
         elements.renameButton.disabled = selectionCount !== 1;
 
         if (selectionCount === 1) {
-            elements.renameInput.value = Array.from(this.selectedItems)[0]
+            elements.renameInput.value = Array.from(this.selectionManager.selectedItems)[0]
                 .querySelector('td:first-child > div').textContent.trim();
         } else {
             elements.renameInput.value = '';
         }
-    }
-
-    toggleItemSelection(row, add) {
-        row.classList.toggle(CLASSES.selected, add);
-        row.classList.toggle(CLASSES.defaultHover, !add);
-        if (add) {
-            this.selectedItems.add(row);
-        } else {
-            row.classList.remove(CLASSES.selectedHover);
-            this.selectedItems.delete(row);
-        }
-        this.updateRowHover(row);
-    }
-
-    handleRangeSelection(row, anchorRow) {
-        const visibleRows = Array.from(document.getElementById('fileList').getElementsByTagName('tr'))
-            .filter(row => row.dataset.path && row.style.display !== 'none');
-
-        const currentIndex = visibleRows.indexOf(row);
-        const anchorIndex = visibleRows.indexOf(anchorRow);
-
-        if (currentIndex === -1 || anchorIndex === -1) return;
-
-        this.selectedItems.forEach(item => this.toggleItemSelection(item, false));
-        this.selectedItems.clear();
-
-        const start = Math.min(currentIndex, anchorIndex);
-        const end = Math.max(currentIndex, anchorIndex);
-
-        visibleRows.slice(start, end + 1)
-            .filter(row => !row.classList.contains(...CLASSES.noAccess))
-            .forEach(row => this.toggleItemSelection(row, true));
-    }
-
-    handleItemSelection(row, item, event) {
-        if (row.classList.contains(...CLASSES.noAccess)) {
-            return;
-        }
-
-        if (event.shiftKey) {
-            if (!this.selectionAnchor) {
-                this.selectionAnchor = row;
-                this.toggleItemSelection(row, true);
-            } else {
-                this.handleRangeSelection(row, this.selectionAnchor);
-            }
-            this.lastSelectedItem = row;
-        } else if (event.ctrlKey || event.metaKey) {
-            this.toggleItemSelection(row, !this.selectedItems.has(row));
-            this.lastSelectedItem = row;
-            this.selectionAnchor = row;
-        } else {
-            if (this.selectedItems.size === 1 && this.selectedItems.has(row)) {
-                this.toggleItemSelection(row, false);
-                this.lastSelectedItem = null;
-                this.selectionAnchor = null;
-            } else {
-                this.clearSelection();
-                this.toggleItemSelection(row, true);
-                this.lastSelectedItem = row;
-                this.selectionAnchor = row;
-            }
-        }
-
-        this.updateFileOperationsUI();
-    }
-
-    handleDragStart(event, row) {
-        if (row.classList.contains(...CLASSES.noAccess)) return;
-        
-        if (event.button !== 0 || event.shiftKey || event.ctrlKey || event.metaKey) return;
-
-        this.isDragging = true;
-        this.dragStartElement = row;
-        
-        if (!this.selectedItems.has(row)) {
-            this.clearSelection();
-            this.selectionAnchor = row;
-            this.toggleItemSelection(row, true);
-        }
-
-        event.preventDefault();
-    }
-
-    handleDragMove(event) {
-        if (!this.isDragging || !this.dragStartElement) return;
-
-        const fileList = document.getElementById('fileList');
-        const rect = fileList.getBoundingClientRect();
-        const mouseY = event.clientY;
-
-        const rows = Array.from(fileList.getElementsByTagName('tr'))
-            .filter(row => row.dataset.path && row.style.display !== 'none');
-
-        let targetRow = null;
-        for (const row of rows) {
-            const rowRect = row.getBoundingClientRect();
-            if (mouseY >= rowRect.top && mouseY <= rowRect.bottom) {
-                targetRow = row;
-                break;
-            }
-        }
-
-        if (targetRow && !targetRow.classList.contains(...CLASSES.noAccess)) {
-            this.handleRangeSelection(targetRow, this.dragStartElement);
-            this.lastSelectedItem = targetRow;
-        }
-
-        const scrollThreshold = 60;
-        const maxScrollSpeed = 15;
-        const scrollContainer = fileList.closest('.overflow-auto');
-        
-        if (scrollContainer) {
-            const containerRect = scrollContainer.getBoundingClientRect();
-            
-            if (mouseY < containerRect.top + scrollThreshold) {
-                const distance = mouseY - containerRect.top;
-                this.currentScrollSpeed = -maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
-            } else if (mouseY > containerRect.bottom - scrollThreshold) {
-                const distance = containerRect.bottom - mouseY;
-                this.currentScrollSpeed = maxScrollSpeed * Math.max(0, (scrollThreshold - distance) / scrollThreshold);
-            } else {
-                this.currentScrollSpeed = 0;
-            }
-
-            if (this.currentScrollSpeed !== 0) {
-                this.startScrollAnimation(scrollContainer);
-            }
-        }
-    }
-
-    startScrollAnimation(scrollContainer) {
-        if (this.scrollAnimationFrame) return;
-
-        const animate = () => {
-            if (!this.isDragging || this.currentScrollSpeed === 0) {
-                this.scrollAnimationFrame = null;
-                return;
-            }
-
-            scrollContainer.scrollTop += this.currentScrollSpeed;
-            this.scrollAnimationFrame = requestAnimationFrame(animate);
-        };
-
-        this.scrollAnimationFrame = requestAnimationFrame(animate);
-    }
-
-    handleDragEnd() {
-        this.isDragging = false;
-        this.dragStartElement = null;
-        this.currentScrollSpeed = 0;
-        if (this.scrollAnimationFrame) {
-            cancelAnimationFrame(this.scrollAnimationFrame);
-            this.scrollAnimationFrame = null;
-        }
-        this.updateFileOperationsUI();
-    }
-
-    updateRowHover(row) {
-        const isSelected = this.selectedItems.has(row);
-        const isHovered = row.dataset.hovered === 'true';
-
-        row.classList.toggle(CLASSES.defaultHover, !isSelected);
-        row.classList.toggle(CLASSES.selectedHover, isSelected && isHovered);
-        row.classList.toggle(CLASSES.selected, isSelected && !isHovered);
     }
 
     createUpDirectoryRow(path, onClick) {
@@ -346,7 +210,6 @@ class FileManager {
         items.forEach(item => {
             const row = this.createTableRow(item, item.no_access ? CLASSES.noAccess : []);
             
-            row.addEventListener('mousedown', (e) => this.handleItemSelection(row, item, e));
             if (item.is_dir && !item.no_access) {
                 row.addEventListener('dblclick', () => this.listFiles(item.path));
             }
@@ -410,7 +273,7 @@ class FileManager {
     }
 
     async listFiles(path, highlightPath = null) {
-        this.clearSelection();
+        this.selectionManager.clearSelection();
         const fileList = document.getElementById('fileList');
         
         if (path !== this.currentPath) {
@@ -436,13 +299,68 @@ class FileManager {
             document.getElementById('currentPath').textContent = `Current Path: ${this.currentPath}`;
             await this.updateFileList(response, highlightPath);
 
+            this.selectionManager.notifyItemsUpdate();
         } catch (error) {
             console.error('Error listing files:', error);
             fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">Error: ${error.message}</td></tr>`;
         }
     }
 
-initializeEventListeners() {
+    async handleDownload(selectedItems) {
+        const selectedFiles = selectedItems.filter(item => item.dataset.isDir !== 'true');
+        if (selectedFiles.length === 0) {
+            alert('Please select at least one file to download (directories cannot be downloaded)');
+            return;
+        }
+
+        try {
+            const paths = selectedFiles.map(item => item.dataset.path);
+            const queryString = paths.map(path => `paths[]=${encodeURIComponent(path)}`).join('&');
+            
+            const response = await fetch(`/api/download?${queryString}`);
+            
+            if (response.ok) {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                iframe.src = `/api/download?${queryString}`;
+                
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 5000);
+            } else if (response.status === 403) {
+                alert('Access denied: You do not have permission to download these files');
+            } else {
+                alert('Error downloading files');
+            }
+
+        } catch (error) {
+            console.error('Error downloading files:', error);
+            alert('Error downloading files');
+        }
+    }
+
+    async handleDelete(selectedItems) {
+        const paths = selectedItems.map(item => item.dataset.path);
+        const confirmMessage = paths.length === 1 
+            ? `Are you sure you want to delete ${paths[0]}?`
+            : `Are you sure you want to delete ${paths.length} items?`;
+
+        if (!confirm(confirmMessage)) return;
+
+        await this.handleApiCall('/api/delete', 'POST', { paths }, 
+            async response => {
+                if (response.data?.failed?.length) {
+                    alert(`Some items failed to delete:\n${response.data.failed
+                        .map(f => `${f.path}: ${f.error}`).join('\n')}`);
+                }
+                await this.listFiles(this.currentPath);
+                this.selectionManager.clearSelection();
+            }
+        );
+    }
+
+    initializeEventListeners() {
         // Helper function to handle button actions with loading state
         const handleButtonClick = async (buttonId, action) => {
             const button = this.buttons[buttonId];
@@ -461,35 +379,11 @@ initializeEventListeners() {
         // Download button
         document.getElementById('downloadFile')?.addEventListener('click', () =>
             handleButtonClick('download', async () => {
-                if (this.selectedItems.size === 0) {
+                if (this.selectionManager.selectedItems.size === 0) {
                     alert('Please select files to download');
                     return;
                 }
-
-                const selectedFiles = Array.from(this.selectedItems)
-                    .filter(item => item.dataset.isDir !== 'true');
-
-                if (selectedFiles.length === 0) {
-                    alert('Please select at least one file to download (directories cannot be downloaded)');
-                    return;
-                }
-
-                try {
-                    const paths = selectedFiles.map(item => item.dataset.path);
-                    const queryString = paths.map(path => 
-                        `paths[]=${encodeURIComponent(path)}`
-                    ).join('&');
-                    
-                    const link = document.createElement('a');
-                    link.href = `/api/download?${queryString}`;
-                    link.setAttribute('download', '');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } catch (error) {
-                    console.error('Error downloading files:', error);
-                    alert('Error downloading files');
-                }
+                await this.handleDownload(Array.from(this.selectionManager.selectedItems));
             })
         );
 
@@ -508,28 +402,11 @@ initializeEventListeners() {
         // Delete button
         document.getElementById('deleteItem')?.addEventListener('click', () =>
             handleButtonClick('delete', async () => {
-                if (this.selectedItems.size === 0) {
+                if (this.selectionManager.selectedItems.size === 0) {
                     alert('Please select files or folders to delete');
                     return;
                 }
-
-                const paths = Array.from(this.selectedItems).map(item => item.dataset.path);
-                const confirmMessage = paths.length === 1 
-                    ? `Are you sure you want to delete ${paths[0]}?`
-                    : `Are you sure you want to delete ${paths.length} items?`;
-
-                if (!confirm(confirmMessage)) return;
-
-                await this.handleApiCall('/api/delete', 'POST', { paths }, 
-                    async response => {
-                        if (response.data?.failed?.length) {
-                            alert(`Some items failed to delete:\n${response.data.failed
-                                .map(f => `${f.path}: ${f.error}`).join('\n')}`);
-                        }
-                        await this.listFiles(this.currentPath);
-                        this.clearSelection();
-                    }
-                );
+                await this.handleDelete(Array.from(this.selectionManager.selectedItems));
             })
         );
 
@@ -561,12 +438,12 @@ initializeEventListeners() {
         // Rename button
         document.getElementById('renameItem')?.addEventListener('click', () =>
             handleButtonClick('rename', async () => {
-                if (this.selectedItems.size !== 1) {
+                if (this.selectionManager.selectedItems.size !== 1) {
                     alert('Please select a single file or folder to rename');
                     return;
                 }
 
-                const selectedItem = Array.from(this.selectedItems)[0];
+                const selectedItem = Array.from(this.selectionManager.selectedItems)[0];
                 const oldPath = selectedItem.dataset.path;
                 const renameInput = document.getElementById('renameInput');
                 const newName = renameInput?.value.trim();
@@ -586,7 +463,7 @@ initializeEventListeners() {
                             `${this.currentPath}\\${newName}`;
                         await this.listFiles(this.currentPath, newPath);
                         document.getElementById('fileOperations')?.classList.add('hidden');
-                        this.clearSelection();
+                        this.selectionManager.clearSelection();
                         if (renameInput) renameInput.value = '';
                     }
                 );
@@ -622,61 +499,55 @@ initializeEventListeners() {
             });
         }
 
+        // Drag selection
+        this.elements.fileList.addEventListener('mousedown', (e) => {
+            const row = e.target.closest('tr');
+            if (row?.dataset?.path) {
+                this.selectionManager.handleDragStart(e, row);
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (this.selectionManager.isDragging) {
+                this.selectionManager.handleDragMove(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (this.selectionManager.isDragging) {
+                this.selectionManager.handleDragEnd();
+            }
+        });
+
+        this.elements.fileList.addEventListener('dragstart', (e) => {
+            if (this.selectionManager.isDragging) {
+                e.preventDefault();
+            }
+        });
+
         // Prevent default mousedown behavior in file list
         document.getElementById('fileList')?.addEventListener('mousedown', (event) => {
             event.preventDefault();
         });
 
-        const fileList = document.getElementById('fileList');
-        if (fileList) {
-            fileList.addEventListener('mousedown', (e) => {
-                const row = e.target.closest('tr');
-                if (row?.dataset?.path) {
-                    this.handleDragStart(e, row);
-                }
-            });
+        // Add context menu handling
+        this.elements.fileList.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            const row = event.target.closest('tr');
+            if (!row || !row.dataset.path) return;
 
-            document.addEventListener('mousemove', (e) => {
-                if (this.isDragging) {
-                    this.handleDragMove(e);
-                }
-            });
+            if (!this.selectionManager.selectedItems.has(row)) {
+                this.selectionManager.clearSelection();
+                this.selectionManager.toggleItemSelection(row, true);
+            }
 
-            document.addEventListener('mouseup', () => {
-                if (this.isDragging) {
-                    this.handleDragEnd();
-                }
-            });
+            this.contextMenu.show(event.clientX, event.clientY);
+        });
 
-            fileList.addEventListener('dragstart', (e) => {
-                if (this.isDragging) {
-                    e.preventDefault();
-                }
-            });
-        }
-
-        // Global keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Ignore if we're in an input field or a textarea
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-            // Ctrl+A or Cmd+A to select all
-            if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-                e.preventDefault();
-                const fileList = document.getElementById('fileList');
-                if (!fileList) return;
-
-                const selectableRows = Array.from(fileList.getElementsByTagName('tr'))
-                    .filter(row => row.dataset.path && 
-                                 !row.classList.contains(...CLASSES.noAccess) && 
-                                 row.style.display !== 'none');
-                
-                this.clearSelection();
-                selectableRows.forEach(row => {
-                    row.classList.add(CLASSES.selected);
-                    this.selectedItems.add(row);
-                });
-                this.updateFileOperationsUI();
+        // Update document click handler to hide context menu
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.context-menu')) {
+                this.contextMenu.hide();
             }
         });
     }
@@ -686,6 +557,7 @@ initializeEventListeners() {
         this.initializeButtons();
         this.dropZone = new DropZone('dropZone', this.handleFileUpload.bind(this));
         this.initializeEventListeners();
+        this.selectionManager.initialize();
         this.listFiles(this.currentPath);
     }
 }

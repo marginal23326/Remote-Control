@@ -12,9 +12,11 @@ from routes import auth_routes, stream_routes, system_routes, file_routes, input
 from events import register_events
 from extensions import socketio, init_app
 
+
 class User(UserMixin):
     def __init__(self, id):
         self.id = id
+
 
 def create_app():
     app = Flask(__name__)
@@ -22,7 +24,7 @@ def create_app():
 
     init_app(app)
     login_manager = LoginManager(app)
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = "auth.login"
 
     audio_manager = AudioManager(socketio)
     stream_manager = StreamManager(socketio)
@@ -53,7 +55,7 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         user_config = load_user_config()
-        if user_config and user_id == user_config['username']:
+        if user_config and user_id == user_config["username"]:
             return User(user_id)
         return None
 

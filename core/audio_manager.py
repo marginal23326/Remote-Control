@@ -78,9 +78,7 @@ class AudioManager:
 
         p = pyaudio.PyAudio()
 
-        rate = (
-            config["rate"] // 2 if stream_name == "client_playback" else config["rate"]
-        )
+        rate = config["rate"] // 2 if stream_name == "client_playback" else config["rate"]
 
         stream_args = {
             "format": config["format"],
@@ -153,9 +151,7 @@ class AudioManager:
 
     def update_settings(self, settings):
         with self.audio_lock:
-            config = self.configs[
-                "client" if settings["type"] == "client" else "server"
-            ]
+            config = self.configs["client" if settings["type"] == "client" else "server"]
             if "rate" in settings:
                 config["rate"] = settings["rate"]
             if "chunk" in settings:

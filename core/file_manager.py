@@ -76,22 +76,15 @@ class FileManager:
                 try:
                     stats = os.stat(full_path)
                     file_info.update({
-                        "size": stats.st_size,
-                        "last_modified": datetime.datetime.fromtimestamp(
-                            stats.st_mtime
-                        ).isoformat()
-                    })
+                            "size": stats.st_size,
+                            "last_modified": datetime.datetime.fromtimestamp(stats.st_mtime).isoformat(),
+                        })
                 except (OSError, PermissionError):
-                    file_info.update({
-                        "size": 0,
-                        "last_modified": None
-                    })
+                    file_info.update({"size": 0, "last_modified": None})
 
             file_list.append(file_info)
 
-        file_list.sort(
-            key=lambda x: (not x["is_dir"], x["no_access"], x["name"].lower())
-        )
+        file_list.sort(key=lambda x: (not x["is_dir"], x["no_access"], x["name"].lower()))
         return file_list
 
     @contextmanager
@@ -122,9 +115,7 @@ class FileManager:
 
             yield temp_path, "download.zip"
 
-            threading.Timer(
-                5.0, lambda p: os.unlink(p) if os.path.exists(p) else None, [temp_path]
-            ).start()
+            threading.Timer(5.0, lambda p: os.unlink(p) if os.path.exists(p) else None, [temp_path]).start()
 
         except Exception:
             if temp_file and os.path.exists(temp_file.name):

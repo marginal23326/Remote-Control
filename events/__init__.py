@@ -6,6 +6,7 @@ from .auth_events import register_auth_events
 from .shell_events import register_shell_events
 from .task_events import register_task_events
 
+
 def register_events(socketio, input_manager, audio_manager, shell_manager, task_manager):
     register_connection_events(socketio)
     register_audio_events(socketio, audio_manager)

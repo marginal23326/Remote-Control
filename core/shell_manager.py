@@ -19,9 +19,7 @@ class ShellManager:
             self.output_queues[session_id] = queue.Queue()
 
             # Start output monitoring thread
-            threading.Thread(
-                target=self._monitor_output, args=(session_id,), daemon=True
-            ).start()
+            threading.Thread(target=self._monitor_output, args=(session_id,), daemon=True).start()
 
             return True
         except Exception as e:

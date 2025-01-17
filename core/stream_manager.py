@@ -35,7 +35,7 @@ class StreamManager:
                     self.stream_settings[key] = max(1, min(100, int(new_settings[key])))
 
             if "target_fps" in new_settings:
-                new_fps = 60 if new_settings['target_fps'] is None else int(new_settings['target_fps'])
+                new_fps = 60 if new_settings["target_fps"] is None else int(new_settings["target_fps"])
                 if new_fps != self.stream_settings["target_fps"]:
                     self.stream_settings["target_fps"] = new_fps
                     if self.camera and self.camera.is_capturing:
@@ -91,16 +91,12 @@ class StreamManager:
             self.setup_camera()
 
         try:
-            self.camera.start(
-                target_fps=self.stream_settings["target_fps"], video_mode=True
-            )
+            self.camera.start(target_fps=self.stream_settings["target_fps"], video_mode=True)
             self.start_cursor_updates()
         except Exception as e:
             print(f"Failed to start camera: {e}")
             self.setup_camera()
-            if not self.camera.start(
-                target_fps=self.stream_settings["target_fps"], video_mode=True
-            ):
+            if not self.camera.start(target_fps=self.stream_settings["target_fps"], video_mode=True):
                 return
 
         while self.stream_active and self.current_stream_sid == sid:
@@ -158,8 +154,11 @@ class StreamManager:
 
     def start_cursor_updates(self):
         if self.cursor_update_thread is None or not self.cursor_update_thread.is_alive():
-            self.cursor_update_thread = Thread(target=self._cursor_update_loop,
-                args=(current_app._get_current_object(),), daemon=True)
+            self.cursor_update_thread = Thread(
+                target=self._cursor_update_loop,
+                args=(current_app._get_current_object(),),
+                daemon=True,
+            )
             self.cursor_update_thread.start()
 
     def _cursor_update_loop(self, app):

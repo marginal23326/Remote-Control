@@ -379,10 +379,6 @@ class FileManager {
         // Download button
         document.getElementById('downloadFile')?.addEventListener('click', () =>
             handleButtonClick('download', async () => {
-                if (this.selectionManager.selectedItems.size === 0) {
-                    alert('Please select files to download');
-                    return;
-                }
                 await this.handleDownload(Array.from(this.selectionManager.selectedItems));
             })
         );
@@ -402,10 +398,6 @@ class FileManager {
         // Delete button
         document.getElementById('deleteItem')?.addEventListener('click', () =>
             handleButtonClick('delete', async () => {
-                if (this.selectionManager.selectedItems.size === 0) {
-                    alert('Please select files or folders to delete');
-                    return;
-                }
                 await this.handleDelete(Array.from(this.selectionManager.selectedItems));
             })
         );
@@ -438,11 +430,6 @@ class FileManager {
         // Rename button
         document.getElementById('renameItem')?.addEventListener('click', () =>
             handleButtonClick('rename', async () => {
-                if (this.selectionManager.selectedItems.size !== 1) {
-                    alert('Please select a single file or folder to rename');
-                    return;
-                }
-
                 const selectedItem = Array.from(this.selectionManager.selectedItems)[0];
                 const oldPath = selectedItem.dataset.path;
                 const renameInput = document.getElementById('renameInput');

@@ -21,8 +21,8 @@ class FileManager {
             onSelectionChange: () => this.updateFileOperationsUI()
         });
         this.contextMenu = new ContextMenuManager({
-            getMenuItems: () => {
-                const selectedItems = this.selectionManager.getSelectedItems();
+            getMenuItems: (context) => {
+                const selectedItems = context?.selectedItems || this.selectionManager.getSelectedItems();
                 if (!selectedItems.length) return [];
 
                 const items = [];
@@ -40,8 +40,6 @@ class FileManager {
                     items.push({
                         label: 'Rename',
                         action: () => {
-                            document.getElementById('renameInput').value = 
-                                selectedItems[0].querySelector('td:first-child > div').textContent.trim();
                             document.getElementById('renameInput').focus();
                         }
                     });
@@ -517,7 +515,7 @@ class FileManager {
             event.preventDefault();
         });
 
-        // Add context menu handling
+        // Context menu handling
         this.elements.fileList.addEventListener('contextmenu', (event) => {
             event.preventDefault();
             const row = event.target.closest('tr');
@@ -526,12 +524,12 @@ class FileManager {
             if (!this.selectionManager.selectedItems.has(row)) {
                 this.selectionManager.clearSelection();
                 this.selectionManager.toggleItemSelection(row, true);
+                this.updateFileOperationsUI();
             }
 
             this.contextMenu.show(event.clientX, event.clientY);
         });
 
-        // Update document click handler to hide context menu
         document.addEventListener('click', (event) => {
             if (!event.target.closest('.context-menu')) {
                 this.contextMenu.hide();

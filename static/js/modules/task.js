@@ -12,7 +12,7 @@ function initializeTaskManager(socket) {
         containerSelector: '#taskList',
         itemSelector: 'tr',
         getItemId: (element) => element.dataset.pid,
-        isItemSelectable: (element) => !element.classList.contains('child-process'),
+        isItemSelectable: (element) => true,
         onSelectionChange: (selectedItems) => {
             selectedProcess = selectedItems.length === 1 ? 
                 processes.find(p => p.pid === parseInt(selectedItems[0].dataset.pid)) : null;

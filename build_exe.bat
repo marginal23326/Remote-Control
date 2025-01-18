@@ -1,29 +1,27 @@
 @echo off
-pyinstaller --name server --onefile -w ^
+pyinstaller --name server --onefile -w --clean --log-level WARN ^
     --add-data "templates;templates" ^
     --add-data "static;static" ^
     --add-data ".\config\user_config.json;." ^
-    --hidden-import core ^
-    --hidden-import routes ^
-    --hidden-import services ^
-    --hidden-import events ^
-    --hidden-import config ^
-    --hidden-import extensions ^
     --hidden-import engineio.async_drivers.threading ^
+    --exclude-module matplotlib ^
+    --exclude-module PIL ^
+    --exclude-module numpy.f2py ^
+    --exclude-module numpy.testing ^
+    --exclude-module PyQt6 ^
+    --exclude-module IPython ^
+    --exclude-module tkinter ^
+    --exclude-module xml ^
+    --noupx ^
     server.py
 
-set /p delete_build="Do you want to delete the 'build' folder? (y/n): "
-if /i "%delete_build%"=="y" (
+set /p delete="Do you want to delete the 'build' folder and the 'server.spec' file? (y/n): "
+if /i "%delete%"=="y" (
     rmdir /s /q build
     echo 'build' folder deleted.
-) else (
-    echo 'build' folder not deleted.
-)
-set /p delete_spec="Do you want to delete the 'server.spec' file? (y/n): "
-if /i "%delete_spec%"=="y" (
     del /q server.spec
     echo 'server.spec' file deleted.
 ) else (
-    echo 'server.spec' file not deleted.
+    echo 'build' folder and 'server.spec' file not deleted.
 )
 pause

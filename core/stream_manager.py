@@ -1,4 +1,4 @@
-import cv2
+from cv2 import resize, imencode, IMWRITE_JPEG_QUALITY
 import dxcam
 import base64
 import json
@@ -71,7 +71,7 @@ class StreamManager:
             if screenshot is None:
                 return None
 
-            _, buffer = cv2.imencode(".png", screenshot)
+            _, buffer = imencode(".png", screenshot)
             return base64.b64encode(buffer).decode()
         except Exception as e:
             print(f"Screenshot error: {e}")
@@ -116,9 +116,9 @@ class StreamManager:
                 if resolution_percentage < 100:
                     new_width = int(self.native_width * (resolution_percentage / 100))
                     new_height = int(self.native_height * (resolution_percentage / 100))
-                    screenshot = cv2.resize(screenshot, (new_width, new_height))
+                    screenshot = resize(screenshot, (new_width, new_height))
 
-                _, buffer = cv2.imencode(".jpg", screenshot, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
+                _, buffer = imencode(".jpg", screenshot, [int(IMWRITE_JPEG_QUALITY), quality])
                 img_str = base64.b64encode(buffer).decode()
 
                 self.update_fps()

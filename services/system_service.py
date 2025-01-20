@@ -33,9 +33,10 @@ class SystemService:
             cmd = "wmic /node:localhost /namespace:\\\\root\\SecurityCenter2 path AntiVirusProduct get displayName"
             output = subprocess.check_output(cmd).decode()
             antiviruses = [line.strip() for line in output.split("\n") if line.strip() and "displayname" not in line.lower()]
-            return antiviruses if antiviruses else ["N/A"]
         except Exception:
             return ["N/A"]
+        else:
+            return antiviruses if antiviruses else ["N/A"]
 
     @staticmethod
     def get_firewall_info():

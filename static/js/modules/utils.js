@@ -57,8 +57,8 @@ const SVG_TEMPLATES = {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2M12 3v12m0 0-4-4m4 4 4-4"/>
         </svg>`,
     delete: () => `
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>`,
     rename: () => `
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

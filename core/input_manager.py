@@ -1,4 +1,5 @@
 import time
+from contextlib import suppress
 
 from pyperclip import copy, paste
 
@@ -20,15 +21,13 @@ class InputManager:
     def _preserve_clipboard(self):
         try:
             self._original_clipboard = paste()
-        except:
+        except Exception:
             self._original_clipboard = None
 
     def _restore_clipboard(self):
         if self._original_clipboard is not None:
-            try:
+            with suppress(Exception):
                 copy(self._original_clipboard)
-            except:
-                pass
         self._original_clipboard = None
 
     def handle_mouse_event(self, data):
@@ -54,23 +53,25 @@ class InputManager:
                 for modifier in reversed(modifiers):
                     self.keyboard.release(modifier)
             elif modifiers:
-                self.keyboard.shortcut("+".join(modifiers + [shortcut]))
+                self.keyboard.shortcut("+".join([*modifiers, shortcut]))
             elif shortcut in self.shortcuts:
                 self.keyboard.shortcut(self.shortcuts[shortcut])
             else:
                 self.keyboard.shortcut(shortcut)
-            return True
         except Exception as e:
             print(f"Error in keyboard shortcut: {e}")
             return False
+        else:
+            return True
 
     def type_text(self, text, interval=0.0):
         try:
             self.keyboard.type_string(text, interval)
-            return True
         except Exception as e:
             print(f"Error typing text: {e}")
             return False
+        else:
+            return True
 
     def paste_text(self, text):
         try:
@@ -82,8 +83,9 @@ class InputManager:
             time.sleep(0.05)
 
             self._restore_clipboard()
-            return True
         except Exception as e:
             print(f"Error pasting text: {e}")
             self._restore_clipboard()
             return False
+        else:
+            return True

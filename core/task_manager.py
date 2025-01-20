@@ -64,7 +64,6 @@ class TaskManager:
         try:
             process = psutil.Process(pid)
             process.kill()
-            return True
         except psutil.NoSuchProcess:
             print(f"No process found with PID: {pid}")
             return False
@@ -74,3 +73,5 @@ class TaskManager:
         except Exception as e:
             print(f"Error killing process with PID {pid}: {e}")
             return False
+        else:
+            return True

@@ -1,9 +1,9 @@
 # config/auth_config.py
-import os
 import sys
 from pathlib import Path
 
 from werkzeug.security import generate_password_hash
+
 
 def resource_path(relative_path):
     base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))

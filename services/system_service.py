@@ -34,7 +34,7 @@ class SystemService:
             output = subprocess.check_output(cmd).decode()
             antiviruses = [line.strip() for line in output.split("\n") if line.strip() and "displayname" not in line.lower()]
             return antiviruses if antiviruses else ["N/A"]
-        except:
+        except Exception:
             return ["N/A"]
 
     @staticmethod
@@ -105,7 +105,7 @@ class SystemService:
             asn = str(ip_info.get("asn", {}).get("asn", "N/A"))
             country = ip_info.get("location", {}).get("country", "N/A")
             timezone = ip_info.get("location", {}).get("timezone", "N/A")
-        except:
+        except Exception:
             wan_ip = isp = asn = country = timezone = "N/A"
 
         return {

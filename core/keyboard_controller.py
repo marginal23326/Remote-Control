@@ -8,6 +8,8 @@ KEYEVENTF_KEYUP = 0x0002
 KEYEVENTF_SCANCODE = 0x0008
 KEYEVENTF_UNICODE = 0x0004
 
+EXTENDED_KEY_FLAG = 1024
+
 ULONG_PTR = WPARAM
 
 # Input type constant
@@ -38,7 +40,7 @@ class HARDWAREINPUT(Structure):
                 ("wParamL", WORD),
                 ("wParamH", WORD))
 
-class INPUT_UNION(Union):
+class InputUnion(Union):
     _fields_ = [
         ("ki", KEYBDINPUT),
         ("mi", MOUSEINPUT),
@@ -48,7 +50,7 @@ class INPUT_UNION(Union):
 class INPUT(Structure):
     _fields_ = [
         ("type", c_ulong),
-        ("ii", INPUT_UNION),
+        ("ii", InputUnion),
     ]
 
 class KeyboardController:
@@ -94,8 +96,8 @@ class KeyboardController:
             "win": 0xDB + 1024, "winleft": 0xDB + 1024, "winright": 0xDC + 1024,
             "apps": 0xDD + 1024,
 
-            # Navigation
-            "up": self.user32.MapVirtualKeyW(0x26, 0) + 1024, # Because arrow key scancodes can vary based on the hardware.
+            # Navigation (using MapVirtualKeyW as arrow key scancodes can vary based on the hardware.)
+            "up": self.user32.MapVirtualKeyW(0x26, 0) + 1024,
             "down": self.user32.MapVirtualKeyW(0x28, 0) + 1024,
             "left": self.user32.MapVirtualKeyW(0x25, 0) + 1024,
             "right": self.user32.MapVirtualKeyW(0x27, 0) + 1024,
@@ -152,7 +154,7 @@ class KeyboardController:
 
     def _send_keyboard_event(self, scan_code, flags=0):
         extra = c_ulong(0)
-        ii_ = INPUT_UNION()
+        ii_ = InputUnion()
         ii_.ki = KEYBDINPUT(0, scan_code, flags | KEYEVENTF_SCANCODE, 0, pointer(extra))
         command = INPUT(INPUT_KEYBOARD, ii_)
         self._send_input(command)
@@ -182,9 +184,9 @@ class KeyboardController:
             return False
 
         scan_code = self.keyboard_map[key]
-        flags = KEYEVENTF_EXTENDEDKEY if scan_code > 1024 else 0
-        if scan_code > 1024:
-            scan_code -= 1024
+        flags = KEYEVENTF_EXTENDEDKEY if scan_code > EXTENDED_KEY_FLAG else 0
+        if scan_code > EXTENDED_KEY_FLAG:
+            scan_code -= EXTENDED_KEY_FLAG
 
         self._send_keyboard_event(scan_code, flags)
         return True
@@ -208,8 +210,8 @@ class KeyboardController:
 
         scan_code = self.keyboard_map[key]
         flags = KEYEVENTF_KEYUP
-        if scan_code > 1024:
-            scan_code -= 1024
+        if scan_code > EXTENDED_KEY_FLAG:
+            scan_code -= EXTENDED_KEY_FLAG
             flags |= KEYEVENTF_EXTENDEDKEY
 
         self._send_keyboard_event(scan_code, flags)
@@ -221,7 +223,7 @@ class KeyboardController:
         for i in range(0, len(surrogates), 2):
             higher, lower = surrogates[i:i+2]
             extra = c_ulong(0)
-            ii_ = INPUT_UNION()
+            ii_ = InputUnion()
             ii_.ki = KEYBDINPUT(0, (lower << 8) + higher, KEYEVENTF_UNICODE, 0, pointer(extra))
             self._send_input(INPUT(INPUT_KEYBOARD, ii_))
 

@@ -1,3 +1,4 @@
+import logging
 import queue
 from threading import Lock, Thread
 
@@ -52,7 +53,7 @@ class AudioManager:
             info = p.get_device_info_by_index(i)
             if "stereo mix" not in info["name"].lower():
                 continue
-                
+
             try:
                 test_stream = p.open(
                     format=pyaudio.paInt16,
@@ -64,10 +65,11 @@ class AudioManager:
                     start=False,
                 )
                 test_stream.close()
+            except Exception:
+                logging.exception("Error getting system audio device")
+            else:
                 return i
-            except:
-                pass
-        
+
         raise RuntimeError(
             "Stereo Mix not found or disabled. To enable:\n"
             "1. Right-click the speaker icon in the taskbar; open Sound settings.\n"
@@ -103,11 +105,11 @@ class AudioManager:
         stream = None
         state = self.streams[stream_name]
         config = self.configs[state["config"]]
-        
+
         try:
             with self.audio_lock:
                 p, stream = self._create_stream(stream_name)
-                
+
             while state["active"]:
                 if state["type"] == "input":
                     data = stream.read(config["chunk"], exception_on_overflow=False)
@@ -132,7 +134,8 @@ class AudioManager:
     def start_stream(self, sid, stream_name):
         with self.audio_lock:
             if stream_name not in self.streams:
-                raise ValueError(f"Invalid stream: {stream_name}")
+                msg = f"Invalid stream: {stream_name}"
+                raise ValueError(msg)
 
             state = self.streams[stream_name]
             if not state["active"]:

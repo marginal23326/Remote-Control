@@ -15,8 +15,8 @@ from routes import auth_routes, file_routes, input_routes, shell_routes, stream_
 
 
 class User(UserMixin):
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, user_id):
+        self.user_id = user_id
 
 
 def create_app():

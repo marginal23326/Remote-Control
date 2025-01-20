@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import shutil
 import tempfile
@@ -10,6 +11,7 @@ from pathlib import Path
 import win32api
 from werkzeug.utils import secure_filename
 
+
 class FileManager:
     def __init__(self):
         pass
@@ -17,11 +19,12 @@ class FileManager:
     def check_dir_access(self, path):
         try:
             os.listdir(path)
-            return True
         except (PermissionError, FileNotFoundError, OSError):
             return False
+        else:
+            return True
 
-    def validate_path(self, path, require_exists=True):
+    def validate_path(self, path, *, require_exists=True):
         if not path:
             raise ValueError("Path is required")
 
@@ -103,27 +106,26 @@ class FileManager:
                 yield path, Path(path).name
                 return
 
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
-            temp_path = temp_file.name
-            temp_file.close()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_file:
+                temp_path = temp_file.name
 
-            with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
-                for path in paths:
-                    self.validate_path(path)
-                    if Path(path).is_dir():
-                        continue
-                    zip_file.write(path, Path(path).name)
+                with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                    for path in paths:
+                        self.validate_path(path)
+                        if Path(path).is_dir():
+                            continue
+                        zip_file.write(path, Path(path).name)
 
-            yield temp_path, "download.zip"
+                yield temp_path, "download.zip"
 
-            threading.Timer(5.0, lambda p: Path(p).unlink() if Path(p).exists() else None, [temp_path]).start()
+                threading.Timer(5.0, lambda p: Path(p).unlink() if Path(p).exists() else None, [temp_path]).start()
 
         except Exception:
             if temp_file and Path(temp_file.name).exists():
                 try:
                     Path(temp_file.name).unlink()
-                except:
-                    pass
+                except Exception:
+                    logging.exception("Error unlinking temporary file")
             raise
 
     def create_folder(self, parent_path, folder_name):

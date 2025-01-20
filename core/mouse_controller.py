@@ -38,12 +38,12 @@ class MOUSEINPUT(Structure):
     ]
 
 
-class INPUT_UNION(Union):
+class InputUnion(Union):
     _fields_ = [("mi", MOUSEINPUT)]
 
 
 class INPUT(Structure):
-    _fields_ = [("type", c_ulong), ("ii", INPUT_UNION)]
+    _fields_ = [("type", c_ulong), ("ii", InputUnion)]
 
 
 class MouseController:
@@ -103,7 +103,7 @@ class MouseController:
 
     def _send_mouse_event(self, dx=0, dy=0, data=0, flags=0):
         extra = c_ulong(0)
-        ii_ = INPUT_UNION()
+        ii_ = InputUnion()
         ii_.mi = MOUSEINPUT(dx, dy, data, flags, 0, pointer(extra))
         command = INPUT(INPUT_MOUSE, ii_)
         self._send_input(command)

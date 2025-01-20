@@ -12,20 +12,18 @@ class ShellManager:
 
     def create_session(self, session_id, cols=80, rows=24):
         try:
-            # Create PTY instance using ConPTY
             pty = PtyProcess.spawn("cmd.exe", cwd="C:\\", dimensions=(rows, cols))
-
             self.shells[session_id] = {"pty": pty, "cwd": "C:\\"}
 
             self.output_queues[session_id] = queue.Queue()
 
-            # Start output monitoring thread
             threading.Thread(target=self._monitor_output, args=(session_id,), daemon=True).start()
 
-            return True
         except Exception as e:
             print(f"Failed to create shell session: {e!s}")
             return False
+        else:
+            return True
 
     def _monitor_output(self, session_id):
         pty = self.shells[session_id]["pty"]
@@ -46,10 +44,11 @@ class ShellManager:
         try:
             pty = self.shells[session_id]["pty"]
             pty.write(data)
-            return True
         except Exception as e:
             print(f"Error writing to shell: {e!s}")
             return False
+        else:
+            return True
 
     def read_output(self, session_id):
         if session_id not in self.output_queues:

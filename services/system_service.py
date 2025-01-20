@@ -1,8 +1,8 @@
-import datetime
 import os
 import platform
 import socket
 import subprocess
+import time
 
 import psutil
 import requests
@@ -83,7 +83,7 @@ class SystemService:
     @staticmethod
     def get_uptime():
         boot_time = psutil.boot_time()
-        now = datetime.datetime.now().timestamp()
+        now = time.time()
         uptime_seconds = int(now - boot_time)
         days = uptime_seconds // 86400
         hours = (uptime_seconds % 86400) // 3600

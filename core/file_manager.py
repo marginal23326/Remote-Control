@@ -26,15 +26,24 @@ class FileManager:
 
     def validate_path(self, path, *, require_exists=True):
         if not path:
-            raise ValueError("Path is required")
+            msg = "Path is required"
+            raise ValueError(msg)
 
         if not Path(path).resolve().is_relative_to(Path(path[:3]).resolve()):
-            raise ValueError("Invalid path")
+            msg = "Invalid path"
+            raise ValueError(msg)
 
         if require_exists and not Path(path).exists():
-            raise ValueError("Path does not exist")
+            msg = "Path does not exist"
+            raise ValueError(msg)
 
         return True
+
+    def _validate_download_path(self, path):
+        self.validate_path(path)
+        if Path(path).is_dir():
+            msg = "Cannot download directories directly"
+            raise ValueError(msg)
 
     def get_drive_list(self):
         drives = []
@@ -60,7 +69,8 @@ class FileManager:
 
     def get_directory_contents(self, root_dir):
         if not self.check_dir_access(root_dir):
-            raise ValueError("Access is denied")
+            msg = "Access is denied"
+            raise ValueError(msg)
 
         items = os.listdir(root_dir)
         file_list = []
@@ -80,42 +90,39 @@ class FileManager:
                 try:
                     stats = full_path.stat()
                     file_info.update({
-                            "size": stats.st_size,
-                            "last_modified": datetime.datetime.fromtimestamp(stats.st_mtime).isoformat(),
-                        })
+                        "size": stats.st_size,
+                        "last_modified": datetime.datetime.fromtimestamp(stats.st_mtime, tz=datetime.UTC).isoformat(),
+                    })
                 except (OSError, PermissionError):
                     file_info.update({"size": 0, "last_modified": None})
 
             file_list.append(file_info)
-
         file_list.sort(key=lambda x: (not x["is_dir"], x["no_access"], x["name"].lower()))
+
         return file_list
 
     @contextmanager
     def prepare_download(self, paths):
         if not paths:
-            raise ValueError("No paths provided")
+            msg = "No paths provided"
+            raise ValueError(msg)
 
         temp_file = None
         try:
             if len(paths) == 1:
                 path = paths[0]
-                self.validate_path(path)
-                if Path(path).is_dir():
-                    raise ValueError("Cannot download directories directly")
+                self._validate_download_path(path)
                 yield path, Path(path).name
                 return
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as temp_file:
                 temp_path = temp_file.name
-
                 with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
                     for path in paths:
                         self.validate_path(path)
                         if Path(path).is_dir():
                             continue
                         zip_file.write(path, Path(path).name)
-
                 yield temp_path, "download.zip"
 
                 threading.Timer(5.0, lambda p: Path(p).unlink() if Path(p).exists() else None, [temp_path]).start()
@@ -130,7 +137,8 @@ class FileManager:
 
     def create_folder(self, parent_path, folder_name):
         if not folder_name:
-            raise ValueError("Folder name is required")
+            msg = "Folder name is required"
+            raise ValueError(msg)
 
         self.validate_path(parent_path)
         full_path = Path(parent_path) / folder_name
@@ -139,7 +147,8 @@ class FileManager:
 
     def rename_item(self, old_path, new_name):
         if not new_name:
-            raise ValueError("New name is required")
+            msg = "New name is required"
+            raise ValueError(msg)
 
         self.validate_path(old_path)
         new_path = Path(old_path).parent / new_name
@@ -148,7 +157,8 @@ class FileManager:
 
     def delete_items(self, paths):
         if not paths or not isinstance(paths, list):
-            raise ValueError("Invalid paths provided for deletion")
+            msg = "Invalid paths provided for deletion"
+            raise ValueError(msg)
 
         results = {"successful": [], "failed": []}
 

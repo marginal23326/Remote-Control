@@ -59,7 +59,8 @@ def download_file():
 @handle_errors
 def upload_file():
     if "files" not in request.files:
-        raise ValueError("No file part")
+        msg = "No file part"
+        raise ValueError(msg)
 
     upload_path = request.form.get("path")
     saved_files = []

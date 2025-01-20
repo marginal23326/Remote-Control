@@ -70,13 +70,14 @@ class AudioManager:
             else:
                 return i
 
-        raise RuntimeError(
+        msg = (
             "Stereo Mix not found or disabled. To enable:\n"
             "1. Right-click the speaker icon in the taskbar; open Sound settings.\n"
             "2. Click 'Sound Control Panel' (Win 10) or 'More sound settings' (Win 11); go to the Recording tab.\n"
             "3. Right-click an empty area; select 'Show Disabled Devices'.\n"
-            "4. Enable Stereo Mix.",
+            "4. Enable Stereo Mix."
         )
+        raise RuntimeError(msg)
 
     def _create_stream(self, stream_name):
         state = self.streams[stream_name]

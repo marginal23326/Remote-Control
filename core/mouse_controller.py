@@ -16,6 +16,9 @@ MOUSEEVENTF_ABSOLUTE = 0x8000
 # Input type constant
 INPUT_MOUSE = 0
 
+# Wheel delta constant
+WHEEL_DELTA = 120
+
 # Define pointer type
 PUL = POINTER(c_ulong)
 
@@ -116,7 +119,6 @@ class MouseController:
             self._send_mouse_event(flags=up_flag)
 
     def scroll(self, dx, dy):
-        WHEEL_DELTA = 120
         for delta, flag in [(dy, MOUSEEVENTF_WHEEL), (dx, MOUSEEVENTF_HWHEEL)]:
             if delta != 0:
                 self._send_mouse_event(data=delta * WHEEL_DELTA, flags=flag)

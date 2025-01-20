@@ -29,17 +29,16 @@ class ShellManager:
 
     def _monitor_output(self, session_id):
         pty = self.shells[session_id]["pty"]
-        while session_id in self.shells:
-            try:
+        try:
+            while session_id in self.shells:
                 data = pty.read()
                 if data:
                     self.output_queues[session_id].put(data)
-            except EOFError:
-                print(f"Console for {session_id} closed.")
-                self.cleanup_session(session_id)
-            except Exception as e:
-                print(f"Error reading output: {e!s}")
-                break
+        except EOFError:
+            print(f"Console for {session_id} closed.")
+            self.cleanup_session(session_id)
+        except Exception as e:
+            print(f"Error reading output: {e!s}")
 
     def write_to_shell(self, session_id, data):
         if session_id not in self.shells:

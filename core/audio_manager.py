@@ -49,22 +49,25 @@ class AudioManager:
 
     def _get_system_audio_device(self, p):
         for i in range(p.get_device_count()):
-            try:
-                info = p.get_device_info_by_index(i)
-                if "stereo mix" in info["name"].lower():
-                    test_stream = p.open(
-                        format=pyaudio.paInt16,
-                        channels=1,
-                        rate=44100,
-                        input=True,
-                        frames_per_buffer=1024,
-                        input_device_index=i,
-                        start=False,
-                    )
-                    test_stream.close()
-                    return i
-            except:
+            info = p.get_device_info_by_index(i)
+            if "stereo mix" not in info["name"].lower():
                 continue
+                
+            try:
+                test_stream = p.open(
+                    format=pyaudio.paInt16,
+                    channels=1,
+                    rate=44100,
+                    input=True,
+                    frames_per_buffer=1024,
+                    input_device_index=i,
+                    start=False,
+                )
+                test_stream.close()
+                return i
+            except:
+                pass
+        
         raise RuntimeError(
             "Stereo Mix not found or disabled. To enable:\n"
             "1. Right-click the speaker icon in the taskbar; open Sound settings.\n"
@@ -100,25 +103,24 @@ class AudioManager:
         stream = None
         state = self.streams[stream_name]
         config = self.configs[state["config"]]
-
+        
         try:
             with self.audio_lock:
                 p, stream = self._create_stream(stream_name)
-
+                
             while state["active"]:
-                try:
-                    if state["type"] == "input":
-                        data = stream.read(config["chunk"], exception_on_overflow=False)
-                        self.socketio.emit(config["emit_event"], data, room=sid)
-                    else:
+                if state["type"] == "input":
+                    data = stream.read(config["chunk"], exception_on_overflow=False)
+                    self.socketio.emit(config["emit_event"], data, room=sid)
+                else:
+                    try:
                         data = state["queue"].get(timeout=0.05)
                         if data:
                             stream.write(data)
-                except queue.Empty:
-                    continue
-                except Exception as e:
-                    print(f"Stream error ({stream_name}): {e}")
-                    break
+                    except queue.Empty:
+                        continue
+        except Exception as e:
+            print(f"Stream error ({stream_name}): {e}")
         finally:
             with self.audio_lock:
                 if stream:

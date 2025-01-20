@@ -5,10 +5,10 @@ import tempfile
 import threading
 import zipfile
 from contextlib import contextmanager
+from pathlib import Path
 
 import win32api
 from werkzeug.utils import secure_filename
-
 
 class FileManager:
     def __init__(self):
@@ -25,10 +25,10 @@ class FileManager:
         if not path:
             raise ValueError("Path is required")
 
-        if not os.path.abspath(path).startswith(os.path.abspath(path[:3])):
+        if not Path(path).resolve().is_relative_to(Path(path[:3]).resolve()):
             raise ValueError("Invalid path")
 
-        if require_exists and not os.path.exists(path):
+        if require_exists and not Path(path).exists():
             raise ValueError("Path does not exist")
 
         return True
@@ -37,7 +37,7 @@ class FileManager:
         drives = []
         for d in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
             drive_path = f"{d}:\\"
-            if os.path.exists(drive_path):
+            if Path(drive_path).exists():
                 try:
                     drive_type = win32api.GetDriveType(drive_path)
                     drives.append({
@@ -63,19 +63,19 @@ class FileManager:
         file_list = []
 
         for item in items:
-            full_path = os.path.join(root_dir, item)
-            is_dir = os.path.isdir(full_path)
+            full_path = Path(root_dir) / item
+            is_dir = full_path.is_dir()
 
             file_info = {
                 "name": item,
-                "path": full_path,
+                "path": str(full_path),
                 "is_dir": is_dir,
-                "no_access": is_dir and not self.check_dir_access(full_path),
+                "no_access": is_dir and not self.check_dir_access(str(full_path)),
             }
 
             if not is_dir:
                 try:
-                    stats = os.stat(full_path)
+                    stats = full_path.stat()
                     file_info.update({
                             "size": stats.st_size,
                             "last_modified": datetime.datetime.fromtimestamp(stats.st_mtime).isoformat(),
@@ -98,9 +98,9 @@ class FileManager:
             if len(paths) == 1:
                 path = paths[0]
                 self.validate_path(path)
-                if os.path.isdir(path):
+                if Path(path).is_dir():
                     raise ValueError("Cannot download directories directly")
-                yield path, os.path.basename(path)
+                yield path, Path(path).name
                 return
 
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
@@ -110,18 +110,18 @@ class FileManager:
             with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zip_file:
                 for path in paths:
                     self.validate_path(path)
-                    if os.path.isdir(path):
+                    if Path(path).is_dir():
                         continue
-                    zip_file.write(path, os.path.basename(path))
+                    zip_file.write(path, Path(path).name)
 
             yield temp_path, "download.zip"
 
-            threading.Timer(5.0, lambda p: os.unlink(p) if os.path.exists(p) else None, [temp_path]).start()
+            threading.Timer(5.0, lambda p: Path(p).unlink() if Path(p).exists() else None, [temp_path]).start()
 
         except Exception:
-            if temp_file and os.path.exists(temp_file.name):
+            if temp_file and Path(temp_file.name).exists():
                 try:
-                    os.unlink(temp_file.name)
+                    Path(temp_file.name).unlink()
                 except:
                     pass
             raise
@@ -131,18 +131,18 @@ class FileManager:
             raise ValueError("Folder name is required")
 
         self.validate_path(parent_path)
-        full_path = os.path.join(parent_path, folder_name)
-        os.makedirs(full_path)
-        return full_path
+        full_path = Path(parent_path) / folder_name
+        full_path.mkdir(parents=True)
+        return str(full_path)
 
     def rename_item(self, old_path, new_name):
         if not new_name:
             raise ValueError("New name is required")
 
         self.validate_path(old_path)
-        new_path = os.path.join(os.path.dirname(old_path), new_name)
-        os.rename(old_path, new_path)
-        return new_path
+        new_path = Path(old_path).parent / new_name
+        Path(old_path).rename(new_path)
+        return str(new_path)
 
     def delete_items(self, paths):
         if not paths or not isinstance(paths, list):
@@ -153,10 +153,10 @@ class FileManager:
         for path in paths:
             try:
                 self.validate_path(path)
-                if os.path.isdir(path):
+                if Path(path).is_dir():
                     shutil.rmtree(path)
                 else:
-                    os.remove(path)
+                    Path(path).unlink()
                 results["successful"].append(path)
             except Exception as e:
                 results["failed"].append({"path": path, "error": str(e)})
@@ -164,12 +164,12 @@ class FileManager:
         return results
 
     def save_uploaded_file(self, file, upload_path):
-        absolute_upload_path = os.path.abspath(os.path.join("/", upload_path))
-        self.validate_path(absolute_upload_path, require_exists=False)
+        absolute_upload_path = Path(upload_path).resolve()
+        self.validate_path(str(absolute_upload_path), require_exists=False)
 
         if file.filename:
-            file_path = os.path.join(absolute_upload_path, secure_filename(file.filename))
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            file_path = absolute_upload_path / secure_filename(file.filename)
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             file.save(file_path)
-            return file_path
+            return str(file_path)
         return None

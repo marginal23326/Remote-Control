@@ -1,11 +1,11 @@
 import os
 from functools import wraps
+from pathlib import Path
 
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_login import login_required
 
 bp = Blueprint("files", __name__)
-
 
 def handle_errors(f):
     @wraps(f)
@@ -17,7 +17,6 @@ def handle_errors(f):
 
     return wrapper
 
-
 def success_response(data=None, message=None):
     response = {"status": "success"}
     if data is not None:
@@ -25,7 +24,6 @@ def success_response(data=None, message=None):
     if message:
         response["message"] = message
     return jsonify(response)
-
 
 @bp.route("/api/files")
 @login_required
@@ -49,8 +47,8 @@ def download_file():
     try:
         with current_app.file_manager.prepare_download(paths) as (file_path, filename):
             return send_from_directory(
-                os.path.dirname(file_path),
-                os.path.basename(file_path),
+                Path(file_path).parent,
+                Path(file_path).name,
                 as_attachment=True,
                 download_name=filename,
             )
@@ -74,7 +72,6 @@ def upload_file():
 
     return success_response(message="Files uploaded successfully")
 
-
 @bp.route("/api/delete", methods=["POST"])
 @login_required
 @handle_errors
@@ -88,7 +85,6 @@ def delete_file_or_folder():
 
     return success_response(data=results, message=message)
 
-
 @bp.route("/api/create_folder", methods=["POST"])
 @login_required
 @handle_errors
@@ -97,7 +93,6 @@ def create_folder():
     folder_name = request.json.get("folderName")
     current_app.file_manager.create_folder(parent_path, folder_name)
     return success_response(message="Folder created successfully")
-
 
 @bp.route("/api/rename", methods=["POST"])
 @login_required

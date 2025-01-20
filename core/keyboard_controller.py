@@ -173,8 +173,7 @@ class KeyboardController:
         if len(key) == 1 and self._needs_shift(key):
             base_char = self._get_base_char(key)
             self.press("shift")
-            success = self._press_base(base_char)
-            return success
+            return self._press_base(base_char)
 
         return self._press_base(key.lower())
 

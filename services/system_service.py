@@ -12,27 +12,26 @@ from win32api import GetSystemMetrics
 class SystemService:
     @staticmethod
     def get_windows_edition():
-        return subprocess.check_output("wmic os get Caption", shell=True).decode().split("\n")[1].strip().replace("Microsoft ", "")
+        return subprocess.check_output("wmic os get Caption").decode().split("\n")[1].strip().replace("Microsoft ", "")
 
     @staticmethod
     def get_processor_info():
-        return subprocess.check_output("wmic cpu get name", shell=True).decode().split("\n")[1].strip()
+        return subprocess.check_output("wmic cpu get name").decode().split("\n")[1].strip()
 
     @staticmethod
     def get_architecture():
-        return subprocess.check_output("wmic os get osarchitecture", shell=True).decode().split("\n")[1].strip()
+        return subprocess.check_output("wmic os get osarchitecture").decode().split("\n")[1].strip()
 
     @staticmethod
     def get_gpu_info():
-        output = subprocess.check_output("wmic path win32_VideoController get name", shell=True).decode()
-        gpus = [line.strip() for line in output.split("\n") if line.strip() and "name" not in line.lower()]
-        return gpus
+        output = subprocess.check_output("wmic path win32_VideoController get name").decode()
+        return [line.strip() for line in output.split("\n") if line.strip() and "name" not in line.lower()]
 
     @staticmethod
     def get_antivirus_info():
         try:
             cmd = "wmic /node:localhost /namespace:\\\\root\\SecurityCenter2 path AntiVirusProduct get displayName"
-            output = subprocess.check_output(cmd, shell=True).decode()
+            output = subprocess.check_output(cmd).decode()
             antiviruses = [line.strip() for line in output.split("\n") if line.strip() and "displayname" not in line.lower()]
             return antiviruses if antiviruses else ["N/A"]
         except:
@@ -40,13 +39,13 @@ class SystemService:
 
     @staticmethod
     def get_firewall_info():
-        output = subprocess.check_output("netsh advfirewall show allprofiles state", shell=True).decode()
+        output = subprocess.check_output("netsh advfirewall show allprofiles state").decode()
         return "Enabled" if "ON" in output else "Disabled"
 
     @staticmethod
     def get_cpu_details():
         cmd = "wmic cpu get NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed,CurrentClockSpeed /format:value"
-        output = subprocess.check_output(cmd, shell=True).decode()
+        output = subprocess.check_output(cmd).decode()
         details = dict(line.split("=", 1) for line in output.splitlines() if "=" in line)
 
         return {
@@ -58,7 +57,7 @@ class SystemService:
 
     @staticmethod
     def get_disk_info():
-        output = subprocess.check_output("wmic diskdrive get Model,Size", shell=True).decode()
+        output = subprocess.check_output("wmic diskdrive get Model,Size").decode()
         disks = []
         for line in output.splitlines():
             if "Model" not in line and line.strip():
@@ -72,7 +71,7 @@ class SystemService:
     @staticmethod
     def get_battery_info():
         cmd = "wmic path win32_battery get BatteryStatus,EstimatedChargeRemaining"
-        output = subprocess.check_output(cmd, shell=True).decode()
+        output = subprocess.check_output(cmd).decode()
         lines = [line for line in output.splitlines() if line.strip() and "BatteryStatus" not in line]
         if lines:
             status, charge = lines[0].split()
@@ -100,7 +99,7 @@ class SystemService:
     @staticmethod
     def get_network_info():
         try:
-            ip_info = requests.get("https://api.ipapi.is/").json()
+            ip_info = requests.get("https://api.ipapi.is/", timeout=10).json()
             wan_ip = ip_info.get("ip", "N/A")
             isp = ip_info.get("asn", {}).get("org", "N/A")
             asn = str(ip_info.get("asn", {}).get("asn", "N/A"))
@@ -148,8 +147,8 @@ class SystemService:
             "pc_name": platform.node(),
             "domain": os.environ.get("USERDOMAIN", "-"),
             "hostname": socket.gethostname(),
-            "system_drive": os.environ.get("SystemDrive", "C:"),
-            "system_dir": os.environ.get("SystemRoot", "C:\\Windows") + "\\system32",
+            "system_drive": os.environ.get("SYSTEMDRIVE", "C:"),
+            "system_dir": os.environ.get("SYSTEMROOT", "C:\\Windows") + "\\system32",
             "uptime": SystemService.get_uptime(),
             "mac_address": mac_address,
             "lan_ip": network_info["lan_ip"],

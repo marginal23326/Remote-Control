@@ -1,6 +1,6 @@
-from flask_socketio import emit
-from flask_login import current_user
 from flask import current_app
+from flask_login import current_user
+from flask_socketio import emit
 
 
 def register_connection_events(socketio):

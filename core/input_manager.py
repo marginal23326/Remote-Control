@@ -1,7 +1,10 @@
-from .mouse_controller import MouseController
-from .keyboard_controller import KeyboardController
-from pyperclip import copy, paste
 import time
+
+from pyperclip import copy, paste
+
+from .keyboard_controller import KeyboardController
+from .mouse_controller import MouseController
+
 
 class InputManager:
     def __init__(self):
@@ -74,10 +77,10 @@ class InputManager:
             self._preserve_clipboard()
             copy(text)
             time.sleep(0.05)
-            
+
             self.keyboard.shortcut("ctrl+v")
             time.sleep(0.05)
-            
+
             self._restore_clipboard()
             return True
         except Exception as e:

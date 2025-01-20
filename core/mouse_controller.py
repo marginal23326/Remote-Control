@@ -1,5 +1,5 @@
-from ctypes import WinDLL, Structure, Union, POINTER, sizeof, pointer, c_ulong, c_long
-from ctypes.wintypes import UINT, INT, BOOL
+from ctypes import POINTER, Structure, Union, WinDLL, c_long, c_ulong, pointer, sizeof
+from ctypes.wintypes import BOOL, INT, UINT
 
 # Windows API constants
 MOUSEEVENTF_MOVE = 0x0001

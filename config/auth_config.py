@@ -1,6 +1,7 @@
 # config/auth_config.py
 import os
 import sys
+
 from werkzeug.security import generate_password_hash
 
 
@@ -16,7 +17,7 @@ def load_user_config():
     if not os.path.exists(USER_CONFIG_FILE):
         return None
 
-    with open(USER_CONFIG_FILE, "r") as f:
+    with open(USER_CONFIG_FILE) as f:
         import json
 
         return json.load(f)

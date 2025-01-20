@@ -1,7 +1,8 @@
 # events/task_events.py
-from flask_socketio import emit
-from flask_login import login_required
 from threading import Event
+
+from flask_login import login_required
+from flask_socketio import emit
 
 
 def register_task_events(socketio, task_manager):

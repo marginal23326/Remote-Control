@@ -1,12 +1,13 @@
-from contextlib import contextmanager
-from werkzeug.utils import secure_filename
-import os
-import win32api
-import shutil
 import datetime
-import zipfile
+import os
+import shutil
 import tempfile
 import threading
+import zipfile
+from contextlib import contextmanager
+
+import win32api
+from werkzeug.utils import secure_filename
 
 
 class FileManager:
@@ -69,7 +70,7 @@ class FileManager:
                 "name": item,
                 "path": full_path,
                 "is_dir": is_dir,
-                "no_access": is_dir and not self.check_dir_access(full_path)
+                "no_access": is_dir and not self.check_dir_access(full_path),
             }
 
             if not is_dir:

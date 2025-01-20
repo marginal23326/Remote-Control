@@ -1,11 +1,12 @@
-from cv2 import resize, imencode, IMWRITE_JPEG_QUALITY
-import dxcam
 import base64
 import json
-import time
 import sys
+import time
+from threading import Event, Lock, Thread
+
+import dxcam
 import win32gui
-from threading import Lock, Event, Thread
+from cv2 import IMWRITE_JPEG_QUALITY, imencode, resize
 from flask import current_app
 
 
@@ -40,7 +41,7 @@ class StreamManager:
                     self.stream_settings["target_fps"] = new_fps
                     if self.camera and self.camera.is_capturing:
                         self.camera.stop()
-                        self.camera.start(target_fps=self.stream_settings['target_fps'], video_mode=True)
+                        self.camera.start(target_fps=self.stream_settings["target_fps"], video_mode=True)
                         self.settings_updated.set()
 
     def setup_camera(self):

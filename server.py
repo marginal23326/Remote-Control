@@ -1,9 +1,10 @@
 # server.py
-from app import create_app
 import sys
-from services.system_service import SystemService
-from extensions import socketio
+
+from app import create_app
 from config.auth_config import USER_CONFIG, save_user_config
+from extensions import socketio
+from services.system_service import SystemService
 
 
 def prompt_for_credentials():

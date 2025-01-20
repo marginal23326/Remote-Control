@@ -1,6 +1,7 @@
 # core/shell_manager.py
 import queue
 import threading
+
 from winpty import PtyProcess
 
 
@@ -23,7 +24,7 @@ class ShellManager:
 
             return True
         except Exception as e:
-            print(f"Failed to create shell session: {str(e)}")
+            print(f"Failed to create shell session: {e!s}")
             return False
 
     def _monitor_output(self, session_id):
@@ -37,7 +38,7 @@ class ShellManager:
                 print(f"Console for {session_id} closed.")
                 self.cleanup_session(session_id)
             except Exception as e:
-                print(f"Error reading output: {str(e)}")
+                print(f"Error reading output: {e!s}")
                 break
 
     def write_to_shell(self, session_id, data):
@@ -48,7 +49,7 @@ class ShellManager:
             pty.write(data)
             return True
         except Exception as e:
-            print(f"Error writing to shell: {str(e)}")
+            print(f"Error writing to shell: {e!s}")
             return False
 
     def read_output(self, session_id):
@@ -64,7 +65,7 @@ class ShellManager:
                 except queue.Empty:
                     break
         except Exception as e:
-            print(f"Error reading output: {str(e)}")
+            print(f"Error reading output: {e!s}")
 
         return "".join(output) if output else None
 
@@ -73,7 +74,7 @@ class ShellManager:
             try:
                 self.shells[session_id]["pty"].setwinsize(rows, cols)
             except Exception as e:
-                print(f"Error resizing terminal: {str(e)}")
+                print(f"Error resizing terminal: {e!s}")
 
     def cleanup_session(self, session_id):
         if session_id not in self.shells:
@@ -85,4 +86,4 @@ class ShellManager:
             del self.shells[session_id]
             del self.output_queues[session_id]
         except Exception as e:
-            print(f"Error cleaning up session: {str(e)}")
+            print(f"Error cleaning up session: {e!s}")

@@ -1,16 +1,17 @@
 from flask import Flask
 from flask_login import LoginManager, UserMixin
-from config.server_config import Config
+
 from config.auth_config import load_user_config
-from core.input_manager import InputManager
+from config.server_config import Config
 from core.audio_manager import AudioManager
-from core.stream_manager import StreamManager
-from core.shell_manager import ShellManager
 from core.file_manager import FileManager
+from core.input_manager import InputManager
+from core.shell_manager import ShellManager
+from core.stream_manager import StreamManager
 from core.task_manager import TaskManager
-from routes import auth_routes, stream_routes, system_routes, file_routes, input_routes, shell_routes, task_routes
 from events import register_events
-from extensions import socketio, init_app
+from extensions import init_app, socketio
+from routes import auth_routes, file_routes, input_routes, shell_routes, stream_routes, system_routes, task_routes
 
 
 class User(UserMixin):

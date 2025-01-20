@@ -1,8 +1,8 @@
 # events/__init__.py
-from .connection_events import register_connection_events
 from .audio_events import register_audio_events
-from .input_events import register_input_events
 from .auth_events import register_auth_events
+from .connection_events import register_connection_events
+from .input_events import register_input_events
 from .shell_events import register_shell_events
 from .task_events import register_task_events
 

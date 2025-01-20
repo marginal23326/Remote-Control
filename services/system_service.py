@@ -1,10 +1,11 @@
-import psutil
-import platform
 import datetime
 import os
+import platform
 import socket
-import requests
 import subprocess
+
+import psutil
+import requests
 from win32api import GetSystemMetrics
 
 
@@ -127,7 +128,7 @@ class SystemService:
             (addr.address for n, addrs in psutil.net_if_addrs().items()
              for addr in addrs if addr.family == psutil.AF_LINK
              and psutil.net_if_stats()[n].isup),
-            'N/A'
+            "N/A",
         )
 
         return {

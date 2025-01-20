@@ -1,6 +1,7 @@
-import pyaudio
 import queue
 from threading import Lock, Thread
+
+import pyaudio
 
 
 class AudioManager:
@@ -69,7 +70,7 @@ class AudioManager:
             "1. Right-click the speaker icon in the taskbar; open Sound settings.\n"
             "2. Click 'Sound Control Panel' (Win 10) or 'More sound settings' (Win 11); go to the Recording tab.\n"
             "3. Right-click an empty area; select 'Show Disabled Devices'.\n"
-            "4. Enable Stereo Mix."
+            "4. Enable Stereo Mix.",
         )
 
     def _create_stream(self, stream_name):

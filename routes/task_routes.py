@@ -1,5 +1,5 @@
 # routes/task_routes.py
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, current_app, jsonify, request
 from flask_login import login_required
 
 bp = Blueprint("tasks", __name__)
@@ -20,6 +20,5 @@ def kill_task():
         return jsonify({"status": "error", "message": "PID is required"}), 400
     success = current_app.task_manager.kill_process(pid)
     if success:
-        return jsonify({'status': 'success', 'message': f'Process with PID {pid} killed successfully'})
-    else:
-        return jsonify({"status": "error", "message": f"Failed to kill process with PID {pid}"}), 500
+        return jsonify({"status": "success", "message": f"Process with PID {pid} killed successfully"})
+    return jsonify({"status": "error", "message": f"Failed to kill process with PID {pid}"}), 500

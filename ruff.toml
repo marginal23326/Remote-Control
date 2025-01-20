@@ -1,5 +1,20 @@
 line-length = 120
 
+[lint]
 select = [
     "ALL",
+]
+
+ignore = [
+    #### modules
+    "ANN", # flake8-annotations
+
+    "D100",   # ignore missing docs
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
 ]

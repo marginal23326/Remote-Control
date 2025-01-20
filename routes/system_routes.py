@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required
+
 from services.system_service import SystemService
 
 bp = Blueprint("system", __name__)

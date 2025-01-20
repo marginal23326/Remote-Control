@@ -1,7 +1,8 @@
-from flask import Blueprint, jsonify, request, send_from_directory, current_app
-from flask_login import login_required
 import os
 from functools import wraps
+
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask_login import login_required
 
 bp = Blueprint("files", __name__)
 
@@ -44,7 +45,7 @@ def list_files():
 @handle_errors
 def download_file():
     paths = request.args.getlist("paths[]")
-    
+
     try:
         with current_app.file_manager.prepare_download(paths) as (file_path, filename):
             return send_from_directory(
@@ -82,7 +83,7 @@ def delete_file_or_folder():
     results = current_app.file_manager.delete_items(paths)
 
     message = (f"Deleted {len(results['successful'])} items, "
-               f"{len(results['failed'])} failed") if results['failed'] else \
+               f"{len(results['failed'])} failed") if results["failed"] else \
                f"Successfully deleted {len(results['successful'])} items"
 
     return success_response(data=results, message=message)

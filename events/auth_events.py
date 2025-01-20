@@ -1,5 +1,5 @@
-from flask_socketio import emit
 from flask_login import current_user
+from flask_socketio import emit
 
 
 def register_auth_events(socketio):

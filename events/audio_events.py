@@ -1,5 +1,5 @@
-from flask_login import login_required
 from flask import request
+from flask_login import login_required
 
 
 def register_audio_events(socketio, audio_manager):

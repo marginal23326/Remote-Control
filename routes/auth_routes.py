@@ -1,7 +1,8 @@
-from flask import Blueprint, request, render_template, redirect, url_for
-from flask_login import login_user, logout_user, login_required
-from config.auth_config import load_user_config
+from flask import Blueprint, redirect, render_template, request, url_for
+from flask_login import login_required, login_user, logout_user
 from werkzeug.security import check_password_hash
+
+from config.auth_config import load_user_config
 from extensions import socketio
 
 
@@ -40,8 +41,7 @@ def login():
             login_user(user)
             socketio.emit("auth_status", {"authenticated": True})
             return redirect(url_for("auth.index"))
-        else:
-            return render_template("login.html", error="Invalid credentials")
+        return render_template("login.html", error="Invalid credentials")
     return render_template("login.html", error=None)
 
 

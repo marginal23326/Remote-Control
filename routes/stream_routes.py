@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, Response, request, current_app
+from flask import Blueprint, Response, current_app, jsonify, request
 from flask_login import login_required
 
 bp = Blueprint("stream", __name__)
@@ -11,7 +11,7 @@ def screenshot():
     return jsonify({
         "status": "success" if img_str else "error",
         "image": img_str,
-        "message": "Failed to capture screenshot" if not img_str else None
+        "message": "Failed to capture screenshot" if not img_str else None,
     })
 
 

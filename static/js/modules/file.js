@@ -63,11 +63,11 @@ class FileManager {
 
     initializeButtons() {
         const buttonConfigs = {
-            download: 'Downloading...',
-            delete: 'Deleting...',
-            rename: 'Renaming...',
+            downloadFile: 'Downloading...',
+            deleteItem: 'Deleting...',
+            renameItem: 'Renaming...',
             createFolder: 'Creating...',
-            upload: 'Uploading...',
+            uploadFile: 'Uploading...',
             refresh: 'Refreshing...'
         };
         
@@ -75,6 +75,9 @@ class FileManager {
             Object.entries(buttonConfigs)
                 .map(([id, loadingText]) => {
                     const button = document.getElementById(id);
+                    if (id === 'deleteItem') {
+                        button.innerHTML = SVG_TEMPLATES.cross() + ' ' + button.textContent;
+                    }
                     return button ? [id, new LoadingButton(button, loadingText)] : null;
                 })
                 .filter(Boolean)
@@ -376,14 +379,14 @@ class FileManager {
 
         // Download button
         document.getElementById('downloadFile')?.addEventListener('click', () =>
-            handleButtonClick('download', async () => {
+            handleButtonClick('downloadFile', async () => {
                 await this.handleDownload(Array.from(this.selectionManager.selectedItems));
             })
         );
 
         // Upload button
         document.getElementById('uploadFile')?.addEventListener('click', () =>
-            handleButtonClick('upload', async () => {
+            handleButtonClick('uploadFile', async () => {
                 const fileInput = document.getElementById('fileUpload');
                 if (!fileInput?.files.length) {
                     alert('Please select a file to upload');
@@ -395,7 +398,7 @@ class FileManager {
 
         // Delete button
         document.getElementById('deleteItem')?.addEventListener('click', () =>
-            handleButtonClick('delete', async () => {
+            handleButtonClick('deleteItem', async () => {
                 await this.handleDelete(Array.from(this.selectionManager.selectedItems));
             })
         );
@@ -427,7 +430,7 @@ class FileManager {
 
         // Rename button
         document.getElementById('renameItem')?.addEventListener('click', () =>
-            handleButtonClick('rename', async () => {
+            handleButtonClick('renameItem', async () => {
                 const selectedItem = Array.from(this.selectionManager.selectedItems)[0];
                 const oldPath = selectedItem.dataset.path;
                 const renameInput = document.getElementById('renameInput');

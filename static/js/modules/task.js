@@ -1,5 +1,5 @@
 // static/js/modules/task.js
-import { apiCall, SelectionManager, ContextMenuManager } from './utils.js';
+import { apiCall, SVG_TEMPLATES, SelectionManager, ContextMenuManager } from './utils.js';
 
 function initializeTaskManager(socket) {
     const taskList = document.getElementById('taskList');
@@ -102,6 +102,7 @@ function initializeTaskManager(socket) {
 
         const endTaskButton = document.getElementById('endTaskButton');
         if (!endTaskButton.hasListener) {
+            endTaskButton.innerHTML = SVG_TEMPLATES.cross() + endTaskButton.innerHTML;
             endTaskButton.addEventListener('click', () => {
                 const selectedItems = selectionManager.getSelectedItems();
                 if (selectedItems.length > 0) {

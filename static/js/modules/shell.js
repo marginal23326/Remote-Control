@@ -1,3 +1,5 @@
+import { SVG_TEMPLATES } from './utils.js';
+
 export class InteractiveShell {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -174,6 +176,7 @@ export class InteractiveShell {
         }
 
         if (closeTextBtn) {
+            closeTextBtn.innerHTML = SVG_TEMPLATES.cross();
             closeTextBtn.addEventListener('click', () => this.closeTextMode());
         }
 

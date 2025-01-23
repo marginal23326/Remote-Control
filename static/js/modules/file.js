@@ -1,8 +1,10 @@
-import { apiCall, SVG_TEMPLATES, CLASSES, formatFileSize, formatDate, SelectionManager, ContextMenuManager } from './utils.js';
+// static/js/modules/file.js
+import { apiCall, SVG_TEMPLATES, CLASSES, formatFileSize, formatDate, BaseFileManager } from './utils.js';
 import { LoadingButton } from './dom.js';
 
-class FileManager {
+class FileManager extends BaseFileManager {
     constructor() {
+        super();
         this.currentPath = '/';
         this.currentFileList = [];
         this.buttons = {};
@@ -13,46 +15,6 @@ class FileManager {
             currentPath: null,
             searchInput: null
         };
-        this.selectionManager = new SelectionManager({
-            containerSelector: '#fileList',
-            itemSelector: 'tr',
-            getItemId: (element) => element.dataset.path,
-            isItemSelectable: (element) => !element.classList.contains(...CLASSES.noAccess),
-            onSelectionChange: () => this.updateFileOperationsUI()
-        });
-        this.contextMenu = new ContextMenuManager({
-            getMenuItems: (context) => {
-                const selectedItems = context?.selectedItems || this.selectionManager.getSelectedItems();
-                if (!selectedItems.length) return [];
-
-                const items = [];
-                const hasDirectories = selectedItems.some(item => item.dataset.isDir === 'true');
-                const singleItem = selectedItems.length === 1;
-
-                if (!hasDirectories) {
-                    items.push({
-                        label: 'Download',
-                        action: () => this.handleDownload(selectedItems)
-                    });
-                }
-
-                if (singleItem) {
-                    items.push({
-                        label: 'Rename',
-                        action: () => {
-                            document.getElementById('renameInput').focus();
-                        }
-                    });
-                }
-
-                items.push({
-                    label: 'Delete',
-                    action: () => this.handleDelete(selectedItems)
-                });
-
-                return items;
-            }
-        });
     }
 
     initializeElements() {
@@ -175,6 +137,7 @@ class FileManager {
         };
 
         elements.operations.classList.toggle('hidden', !selectionCount);
+        
         elements.download.disabled = !selectionCount || hasDirectorySelected;
         elements.delete.disabled = !selectionCount;
         elements.renameInput.disabled = selectionCount !== 1;
@@ -274,7 +237,7 @@ class FileManager {
     }
 
     async listFiles(path, highlightPath = null) {
-        this.selectionManager.clearSelection();
+        this.clearSelection();
         const fileList = document.getElementById('fileList');
         
         if (path !== this.currentPath) {
@@ -356,7 +319,7 @@ class FileManager {
                         .map(f => `${f.path}: ${f.error}`).join('\n')}`);
                 }
                 await this.listFiles(this.currentPath);
-                this.selectionManager.clearSelection();
+                this.clearSelection();
             }
         );
     }
@@ -380,7 +343,7 @@ class FileManager {
         // Download button
         document.getElementById('downloadFile')?.addEventListener('click', () =>
             handleButtonClick('downloadFile', async () => {
-                await this.handleDownload(Array.from(this.selectionManager.selectedItems));
+                await this.handleDownload(this.getSelectedItems());
             })
         );
 
@@ -399,7 +362,7 @@ class FileManager {
         // Delete button
         document.getElementById('deleteItem')?.addEventListener('click', () =>
             handleButtonClick('deleteItem', async () => {
-                await this.handleDelete(Array.from(this.selectionManager.selectedItems));
+                await this.handleDelete(this.getSelectedItems());
             })
         );
 
@@ -431,7 +394,7 @@ class FileManager {
         // Rename button
         document.getElementById('renameItem')?.addEventListener('click', () =>
             handleButtonClick('renameItem', async () => {
-                const selectedItem = Array.from(this.selectionManager.selectedItems)[0];
+                const selectedItem = this.getSelectedItems()[0];
                 const oldPath = selectedItem.dataset.path;
                 const renameInput = document.getElementById('renameInput');
                 const newName = renameInput?.value.trim();
@@ -451,7 +414,7 @@ class FileManager {
                             `${this.currentPath}\\${newName}`;
                         await this.listFiles(this.currentPath, newPath);
                         document.getElementById('fileOperations')?.classList.add('hidden');
-                        this.selectionManager.clearSelection();
+                        this.clearSelection();
                         if (renameInput) renameInput.value = '';
                     }
                 );
@@ -486,58 +449,6 @@ class FileManager {
                 e.stopPropagation();
             });
         }
-
-        // Drag selection
-        this.elements.fileList.addEventListener('mousedown', (e) => {
-            const row = e.target.closest('tr');
-            if (row?.dataset?.path) {
-                this.selectionManager.handleDragStart(e, row);
-            }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (this.selectionManager.isDragging) {
-                this.selectionManager.handleDragMove(e);
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (this.selectionManager.isDragging) {
-                this.selectionManager.handleDragEnd();
-            }
-        });
-
-        this.elements.fileList.addEventListener('dragstart', (e) => {
-            if (this.selectionManager.isDragging) {
-                e.preventDefault();
-            }
-        });
-
-        // Prevent default mousedown behavior in file list
-        document.getElementById('fileList')?.addEventListener('mousedown', (event) => {
-            event.preventDefault();
-        });
-
-        // Context menu handling
-        this.elements.fileList.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            const row = event.target.closest('tr');
-            if (!row || !row.dataset.path) return;
-
-            if (!this.selectionManager.selectedItems.has(row)) {
-                this.selectionManager.clearSelection();
-                this.selectionManager.toggleItemSelection(row, true);
-                this.updateFileOperationsUI();
-            }
-
-            this.contextMenu.show(event.clientX, event.clientY);
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!event.target.closest('.context-menu')) {
-                this.contextMenu.hide();
-            }
-        });
     }
 
     initialize() {
@@ -545,7 +456,7 @@ class FileManager {
         this.initializeButtons();
         this.dropZone = new DropZone('dropZone', this.handleFileUpload.bind(this));
         this.initializeEventListeners();
-        this.selectionManager.initialize();
+        super.initialize();
         this.listFiles(this.currentPath);
     }
 }

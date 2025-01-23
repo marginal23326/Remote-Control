@@ -1,46 +1,14 @@
 // static/js/modules/task.js
-import { apiCall, SVG_TEMPLATES, SelectionManager, ContextMenuManager } from './utils.js';
+import { apiCall, SVG_TEMPLATES, BaseTaskManager } from './utils.js';
 
 function initializeTaskManager(socket) {
-    const taskList = document.getElementById('taskList');
+    const taskManager = new BaseTaskManager();
     let selectedProcess = null;
     let currentSort = { column: 'name', order: 'asc' };
     let processes = [];
     let expandedGroups = new Set();
 
-    const selectionManager = new SelectionManager({
-        containerSelector: '#taskList',
-        itemSelector: 'tr',
-        getItemId: (element) => element.dataset.pid,
-        isItemSelectable: (element) => true,
-        onSelectionChange: (selectedItems) => {
-            selectedProcess = selectedItems.length === 1 ? 
-                processes.find(p => p.pid === parseInt(selectedItems[0].dataset.pid)) : null;
-            
-            const endTaskContainer = document.getElementById('endTaskContainer');
-            if (selectedItems.length > 0) {
-                endTaskContainer.classList.remove('hidden');
-            } else {
-                endTaskContainer.classList.add('hidden');
-            }
-        }
-    });
-
-    const contextMenu = new ContextMenuManager({
-        getMenuItems: (context) => {
-            const selectedItems = selectionManager.getSelectedItems();
-            if (!selectedItems.length) return [];
-
-            return [{
-                label: 'End Task',
-                action: () => {
-                    selectedItems.forEach(item => {
-                        killProcess(parseInt(item.dataset.pid));
-                    });
-                }
-            }];
-        }
-    });
+    const taskList = document.getElementById('taskList');
 
     function renderTaskList(newProcesses) {
         newProcesses.forEach(process => {
@@ -97,14 +65,14 @@ function initializeTaskManager(socket) {
         taskList.innerHTML = '';
         taskList.appendChild(fragment);
 
-        selectionManager.notifyItemsUpdate();
-        selectionManager.config.onSelectionChange(selectionManager.getSelectedItems());
+        taskManager.selectionManager.notifyItemsUpdate();
+        taskManager.config.onSelectionChange(taskManager.getSelectedItems());
 
         const endTaskButton = document.getElementById('endTaskButton');
         if (!endTaskButton.hasListener) {
             endTaskButton.innerHTML = SVG_TEMPLATES.cross() + endTaskButton.innerHTML;
             endTaskButton.addEventListener('click', () => {
-                const selectedItems = selectionManager.getSelectedItems();
+                const selectedItems = taskManager.getSelectedItems();
                 if (selectedItems.length > 0) {
                     selectedItems.forEach(item => {
                         killProcess(parseInt(item.dataset.pid));
@@ -141,9 +109,6 @@ function initializeTaskManager(socket) {
         }
     }
 
-    // Initialize selection manager
-    selectionManager.initialize();
-
     taskList.addEventListener('click', (event) => {
         const expandArrow = event.target.closest('.expand-arrow');
         if (expandArrow) {
@@ -162,57 +127,6 @@ function initializeTaskManager(socket) {
                 event.stopPropagation();
                 return;
             }
-        }
-    });
-
-    taskList.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-        const row = event.target.closest('tr');
-        if (!row || !row.dataset.pid) return;
-
-        if (!selectionManager.selectedItems.has(row)) {
-            selectionManager.clearSelection();
-            selectionManager.toggleItemSelection(row, true);
-        }
-
-        contextMenu.show(event.clientX, event.clientY);
-    });
-
-    // Drag selection
-    taskList.addEventListener('mousedown', (e) => {
-        const row = e.target.closest('tr');
-        if (row?.dataset?.pid) {
-            selectionManager.handleDragStart(e, row);
-        }
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (selectionManager.isDragging) {
-            selectionManager.handleDragMove(e);
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (selectionManager.isDragging) {
-            selectionManager.handleDragEnd();
-        }
-    });
-
-    taskList.addEventListener('dragstart', (e) => {
-        if (selectionManager.isDragging) {
-            e.preventDefault();
-        }
-    });
-
-    // Prevent text selection
-    taskList.addEventListener('selectstart', (event) => {
-        event.preventDefault();
-    });
-
-    // Handle clicking outside context menu
-    document.addEventListener('click', (event) => {
-        if (!event.target.closest('.context-menu')) {
-            contextMenu.hide();
         }
     });
 
@@ -250,6 +164,8 @@ function initializeTaskManager(socket) {
     if (!document.getElementById('processSection')?.classList.contains('hidden')) {
         socket.emit('task_poll_start');
     }
+
+    taskManager.initialize();
 }
 
 export { initializeTaskManager };

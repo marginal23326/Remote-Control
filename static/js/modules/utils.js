@@ -149,16 +149,10 @@ class SelectionManager {
             this.lastSelectedItem = item;
             this.selectionAnchor = item;
         } else {
-            if (this.selectedItems.size === 1 && this.selectedItems.has(item)) {
-                this.toggleItemSelection(item, false);
-                this.lastSelectedItem = null;
-                this.selectionAnchor = null;
-            } else {
-                this.clearSelection();
-                this.toggleItemSelection(item, true);
-                this.lastSelectedItem = item;
-                this.selectionAnchor = item;
-            }
+            this.clearSelection();
+            this.toggleItemSelection(item, true);
+            this.lastSelectedItem = item;
+            this.selectionAnchor = item;
         }
 
         this.config.onSelectionChange(this.getSelectedItems());
@@ -374,4 +368,194 @@ class ContextMenuManager {
     }
 }
 
-export { apiCall, formatFileSize, formatDate, SVG_TEMPLATES, CLASSES, SelectionManager, ContextMenuManager };
+class UIManager {
+    constructor(config) {
+        this.config = {
+            containerSelector: '',
+            isDraggingEnabled: true,
+            isContextMenuEnabled: true,
+            isSelectionEnabled: true,
+            getContextMenuItems: () => [],
+            onSelectionChange: () => {},
+            ...config
+        };
+        
+        this.isDragging = false;
+        this.selectionManager = this.config.isSelectionEnabled ? new SelectionManager({
+            containerSelector: this.config.containerSelector,
+            itemSelector: this.config.itemSelector || 'tr',
+            getItemId: this.config.getItemId,
+            isItemSelectable: this.config.isItemSelectable,
+            onSelectionChange: (items) => {
+                this.isDragging = false;
+                this.config.onSelectionChange(items);
+            }
+        }) : null;
+
+        this.contextMenu = this.config.isContextMenuEnabled ? new ContextMenuManager({
+            getMenuItems: this.config.getContextMenuItems
+        }) : null;
+    }
+
+    initialize() {
+        if (this.selectionManager) {
+            this.selectionManager.initialize();
+        }
+
+        this.initializeDragHandling();
+        this.initializeContextMenu();
+        this.initializePreventDefaults();
+    }
+
+    initializeDragHandling() {
+        if (!this.config.isDraggingEnabled) return;
+
+        const container = document.querySelector(this.config.containerSelector);
+        if (!container) return;
+
+        container.addEventListener('mousedown', (e) => {
+            const row = e.target.closest(this.config.itemSelector || 'tr');
+            if (row?.dataset?.[this.config.itemDataAttribute || 'path']) {
+                this.isDragging = true;
+                this.selectionManager?.handleDragStart(e, row);
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (this.selectionManager?.isDragging) {
+                this.selectionManager.handleDragMove(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (this.isDragging || this.selectionManager?.isDragging) {
+                this.isDragging = false;
+                this.selectionManager?.handleDragEnd();
+            }
+        });
+
+        container.addEventListener('dragstart', (e) => {
+            if (this.selectionManager?.isDragging) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    initializeContextMenu() {
+        if (!this.config.isContextMenuEnabled || !this.contextMenu) return;
+
+        const container = document.querySelector(this.config.containerSelector);
+        if (!container) return;
+
+        container.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            const row = event.target.closest(this.config.itemSelector || 'tr');
+            if (!row || !row.dataset?.[this.config.itemDataAttribute || 'path']) return;
+
+            if (!this.selectionManager?.selectedItems.has(row)) {
+                this.selectionManager?.clearSelection();
+                this.selectionManager?.toggleItemSelection(row, true);
+                this.config.onSelectionChange(this.selectionManager?.getSelectedItems() || []);
+            }
+
+            this.contextMenu.show(event.clientX, event.clientY);
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.context-menu')) {
+                this.contextMenu.hide();
+            }
+        });
+    }
+
+    initializePreventDefaults() {
+        const container = document.querySelector(this.config.containerSelector);
+        if (!container) return;
+
+        container.addEventListener('mousedown', (event) => {
+            event.preventDefault();
+        });
+
+        container.addEventListener('selectstart', (event) => {
+            event.preventDefault();
+        });
+    }
+
+    getSelectedItems() {
+        return this.selectionManager?.getSelectedItems() || [];
+    }
+
+    clearSelection() {
+        this.selectionManager?.clearSelection();
+    }
+}
+
+class BaseFileManager extends UIManager {
+    constructor() {
+        super({
+            containerSelector: '#fileList',
+            itemDataAttribute: 'path',
+            getItemId: (element) => element.dataset.path,
+            isItemSelectable: (element) => !element.classList.contains(...CLASSES.noAccess),
+            getContextMenuItems: (context) => {
+                const selectedItems = context?.selectedItems || this.getSelectedItems();
+                if (!selectedItems.length) return [];
+
+                const items = [];
+                const hasDirectories = selectedItems.some(item => item.dataset.isDir === 'true');
+                const singleItem = selectedItems.length === 1;
+
+                if (!hasDirectories) {
+                    items.push({
+                        label: 'Download',
+                        action: () => this.handleDownload(selectedItems)
+                    });
+                }
+
+                if (singleItem) {
+                    items.push({
+                        label: 'Rename',
+                        action: () => {
+                            document.getElementById('renameInput').focus();
+                        }
+                    });
+                }
+
+                items.push({
+                    label: 'Delete',
+                    action: () => this.handleDelete(selectedItems)
+                });
+
+                return items;
+            },
+            onSelectionChange: () => this.updateFileOperationsUI()
+        });
+    }
+}
+
+class BaseTaskManager extends UIManager {
+    constructor() {
+        super({
+            containerSelector: '#taskList',
+            itemDataAttribute: 'pid',
+            getItemId: (element) => element.dataset.pid,
+            isItemSelectable: (element) => true,
+            getContextMenuItems: () => [{
+                label: 'End Task',
+                action: () => {
+                    this.getSelectedItems().forEach(item => {
+                        this.killProcess(parseInt(item.dataset.pid));
+                    });
+                }
+            }],
+            onSelectionChange: (selectedItems) => {
+                const endTaskContainer = document.getElementById('endTaskContainer');
+                if (!this.isDragging) {
+                    endTaskContainer.classList.toggle('hidden', selectedItems.length === 0);
+                }
+            }
+        });
+    }
+}
+
+export { apiCall, formatFileSize, formatDate, SVG_TEMPLATES, CLASSES, BaseFileManager, BaseTaskManager };

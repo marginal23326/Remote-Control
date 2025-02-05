@@ -12,7 +12,7 @@ import { initializeNavigation } from './modules/nav.js';
 import { initializeTaskManager } from './modules/task.js';
 
 function updateUIBasedOnAuthentication(isAuthenticated) {
-    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection', 'processSection'];
+    const sections = ['streamSection', 'audioSection', 'shellSection', 'keyboardSection', 'fileSection', 'systemSection', 'processSection', 'aiSection'];
     sections.forEach(sectionId => {
         const section = document.getElementById(sectionId);
         section.classList.toggle('hidden', !isAuthenticated);
@@ -26,6 +26,69 @@ function updateUIBasedOnAuthentication(isAuthenticated) {
     }
 
     initializeNavigation(isAuthenticated);
+}
+
+function initializeAI(socket) {
+    const aiPromptInput = document.getElementById('aiPromptInput');
+    const sendAIPromptButton = document.getElementById('sendAIPrompt');
+    const startAIButton = document.getElementById('startAI');
+    const stopAIButton = document.getElementById('stopAI');
+    const aiFeedback = document.getElementById('aiFeedback');
+
+    // Listen for AI feedback from the server
+    socket.on('ai_feedback', (data) => {
+        const feedbackElement = document.createElement('p');
+        feedbackElement.textContent = data.feedback;
+        feedbackElement.classList.add(
+            'bg-gray-800',
+            'text-gray-200',
+            'p-2',
+            'rounded-md',
+            'mb-2'
+        );
+        aiFeedback.appendChild(feedbackElement);
+        aiFeedback.scrollTop = aiFeedback.scrollHeight;
+    });
+
+    if(sendAIPromptButton) {
+        sendAIPromptButton.addEventListener('click', async () => {
+            const prompt = aiPromptInput.value.trim();
+            if (prompt) {
+                const response = await apiCall('/api/ai/prompt', 'POST', { prompt });
+                if (response.status === 'success') {
+                    // aiPromptInput.value = ''; // Optionally clear the input
+                } else {
+                    console.error("Error sending AI prompt:", response.message);
+                }
+            }
+        });
+    }
+    
+    if(startAIButton) {
+        startAIButton.addEventListener('click', async () => {
+            const initialPrompt = document.getElementById('aiInitialPrompt').value.trim();
+            const response = await apiCall('/api/ai/start', 'POST', {initial_prompt: initialPrompt});
+            if (response.status === 'error') {
+                console.error("Error starting AI:", response.message);
+            }
+        });
+    }
+
+    if(stopAIButton) {
+        stopAIButton.addEventListener('click', async () => {
+            const response = await apiCall('/api/ai/stop', 'POST');
+            if (response.status === 'error') {
+                console.error("Error stopping AI:", response.message);
+            }
+        });
+    }
+
+    // Prevent message from sending when pressing Enter
+    aiPromptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+        }
+    });
 }
 
 (async function () {
@@ -42,6 +105,7 @@ function updateUIBasedOnAuthentication(isAuthenticated) {
     initializeFileManagement();
     initializeInputHandlers(socket);
     initializeTaskManager(socket);
+    initializeAI(socket);
 
     // Update system info on load
     updateSystemInfo();

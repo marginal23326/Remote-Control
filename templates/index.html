@@ -97,6 +97,15 @@
                                     <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
                                 </a>
                             </li>
+                            <li>
+                                <a href="#aiSection" class="nav-link group nav-tab">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 17-1 3-1 1h8l-1-1-1-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2"/>
+                                    </svg>
+                                    AI
+                                    <span class="ml-2 h-1.5 w-1.5 rounded-full bg-blue-400/0 group-[.active]:bg-blue-400 transition-colors"></span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -559,6 +568,30 @@
                         <button id="endTaskButton" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2">
                             <span>End Task</span>
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="aiSection" class="section hidden">
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">AI Control</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="aiInitialPrompt" class="block text-sm font-medium text-gray-200">Initial Prompt (optional):</label>
+                            <input type="text" id="aiInitialPrompt" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Enter initial prompt for AI (optional)">
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button id="startAI" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors">Start AI</button>
+                            <button id="stopAI" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors">Stop AI</button>
+                        </div>
+                        <div>
+                            <label for="aiPromptInput" class="block text-sm font-medium text-gray-200">Prompt:</label>
+                            <textarea id="aiPromptInput" rows="4" class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Enter your prompt for the AI..."></textarea>
+                        </div>
+                        <button id="sendAIPrompt" class="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200">Send Prompt</button>
+                        <div id="aiFeedback" class="mt-4 max-h-60 overflow-y-auto space-y-2">
+                            <!-- AI feedback will appear here -->
+                        </div>
                     </div>
                 </div>
             </section>

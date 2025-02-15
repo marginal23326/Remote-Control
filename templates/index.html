@@ -19,7 +19,7 @@
     <div class="p-4 md:p-8">
         <!-- Header -->
         <header class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+            <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">
                 Remote Control Panel
             </h1>
             <button id="logoutButton" class="hidden px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white">
@@ -109,15 +109,15 @@
                 <div class="glass-card rounded-xl p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <div class="flex items-center gap-3">
-                            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Screen Stream</h2>
-                            <span id="streamStatus" class="hidden items-center gap-2 px-3 py-1 text-sm font-medium rounded-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-sm">
+                            <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">Screen Stream</h2>
+                            <span id="streamStatus" class="hidden items-center gap-2 px-3 py-1 text-sm font-medium rounded-full bg-linear-to-r from-emerald-600 to-emerald-700 text-white shadow-xs">
                                 <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                 <span id="currentFPS">0</span> FPS
                             </span>
                         </div>
                         <div id="activeWindow" class="text-center text-gray-300"></div>
                         <div class="flex flex-wrap gap-2">
-                            <div class="inline-flex rounded-lg overflow-hidden shadow-sm">
+                            <div class="inline-flex rounded-lg overflow-hidden shadow-xs">
                                 <button id="startStream" class="inline-flex items-center justify-center w-10 h-10 bg-emerald-600 hover:bg-emerald-700 text-white transition-colors" title="Start Stream">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </button>
@@ -125,7 +125,7 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
                                 </button>
                             </div>
-                            <div class="inline-flex rounded-lg overflow-hidden shadow-sm">
+                            <div class="inline-flex rounded-lg overflow-hidden shadow-xs">
                                 <button id="screenshot" class="inline-flex items-center justify-center w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white transition-colors" title="Take Screenshot">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M3 9a2 2 0 0 1 2-2h1a2 2 0 0 0 2-1V5a2 2 0 0 1 2-1h4a2 2 0 0 1 2 1v1a2 2 0 0 0 2 1h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path stroke-linecap="round" stroke-width="2" d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>
                                 </button>
@@ -191,7 +191,7 @@
 
             <section id="audioSection" class="section hidden">
                 <div class="glass-card rounded-xl p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Audio Controls</h2>
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">Audio Controls</h2>
                     <div class="space-y-4">
                         <!-- Server Audio -->
                         <div>
@@ -235,7 +235,7 @@
             <section id="shellSection" class="section hidden">
                 <div class="glass-card rounded-xl p-4 sm:p-6">
                     <div class="flex flex-wrap gap-2 justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+                        <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">
                             Interactive Shell
                         </h2>
                         <div class="flex gap-2">
@@ -270,7 +270,7 @@
 
             <section id="keyboardSection" class="section hidden">
                 <div class="glass-card rounded-xl p-4 sm:p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Keyboard Controls</h2>
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">Keyboard Controls</h2>
                     
                     <div class="space-y-4">
                         <!-- Common Actions -->
@@ -371,26 +371,26 @@
                             </h3>
                             <div class="flex flex-wrap gap-4 mb-4">
                                 <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="ctrl">
-                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
-                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    <div class="w-4 h-4 rounded-sm border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-xs bg-blue-500 opacity-0 transition-opacity duration-200"></div>
                                     </div>
                                     Ctrl
                                 </button>
                                 <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="win">
-                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
-                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    <div class="w-4 h-4 rounded-sm border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-xs bg-blue-500 opacity-0 transition-opacity duration-200"></div>
                                     </div>
                                     Win
                                 </button>
                                 <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="alt">
-                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
-                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    <div class="w-4 h-4 rounded-sm border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-xs bg-blue-500 opacity-0 transition-opacity duration-200"></div>
                                     </div>
                                     Alt
                                 </button>
                                 <button class="modifier-btn inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-200 transition-all duration-200 cursor-pointer" data-modifier="shift">
-                                    <div class="w-4 h-4 rounded border-2 border-gray-500 flex items-center justify-center">
-                                        <div class="w-2 h-2 rounded-sm bg-blue-500 opacity-0 transition-opacity duration-200"></div>
+                                    <div class="w-4 h-4 rounded-sm border-2 border-gray-500 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-xs bg-blue-500 opacity-0 transition-opacity duration-200"></div>
                                     </div>
                                     Shift
                                 </button>
@@ -420,7 +420,7 @@
             <section id="fileSection" class="section hidden">
                 <div class="glass-card rounded-xl p-6">
                     <!-- Title -->
-                    <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 mb-6">File Management</h2>
+                    <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600 mb-6">File Management</h2>
 
                     <!-- Search Bar -->
                     <div class="mb-4">
@@ -475,7 +475,7 @@
                                     Delete
                                 </button>
                                 <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
-                                    <input type="text" id="renameInput" placeholder="New name" class="flex-grow min-w-[200px] px-3 py-2 rounded-lg bg-white/5 border border-gray-700 focus:border-blue-500 transition-colors disabled:bg-white/5 disabled:cursor-not-allowed">
+                                    <input type="text" id="renameInput" placeholder="New name" class="grow min-w-[200px] px-3 py-2 rounded-lg bg-white/5 border border-gray-700 focus:border-blue-500 transition-colors disabled:bg-white/5 disabled:cursor-not-allowed">
                                     <button id="renameItem" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors disabled:bg-amber-900/70 disabled:cursor-not-allowed">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -537,7 +537,7 @@
 
             <section id="processSection" class="section hidden">
                 <div class="glass-card rounded-xl p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">Processes</h2>
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">Processes</h2>
                     <div class="overflow-auto max-h-96">
                         <table class="min-w-full table-fixed">
                             <thead class="bg-gray-800/50 text-gray-300 sticky top-0">
@@ -565,7 +565,7 @@
 
             <section id="systemSection" class="section hidden">
                 <div class="glass-card rounded-xl p-6">
-                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">System Information</h2>
+                    <h2 class="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-blue-600">System Information</h2>
                     <div id="systemInfo" class="bg-gray-900/50 p-4 rounded-lg space-y-2 whitespace-pre-wrap break-words max-w-full"></div>
                 </div>
             </section>

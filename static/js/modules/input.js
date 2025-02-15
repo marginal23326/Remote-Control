@@ -122,7 +122,7 @@ function initializeInputHandlers(socket) {
     });
 
     // Handle case where user switches windows while holding Ctrl
-    window.addEventListener('blur', () => {
+    window.addEventListener('blur-sm', () => {
         isCtrlPressed = false;
         isDragging = false;
     });

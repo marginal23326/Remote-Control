@@ -1,17 +1,11 @@
 @echo off
-pyinstaller --name server --onefile -w --clean --log-level WARN ^
+pyinstaller --name server -w -F --clean --log-level WARN ^
     --add-data "templates;templates" ^
     --add-data "static;static" ^
     --add-data ".\config\user_config.json;." ^
     --hidden-import engineio.async_drivers.threading ^
-    --exclude-module matplotlib ^
-    --exclude-module PIL ^
     --exclude-module numpy.f2py ^
     --exclude-module numpy.testing ^
-    --exclude-module PyQt6 ^
-    --exclude-module IPython ^
-    --exclude-module tkinter ^
-    --exclude-module xml ^
     --noupx ^
     server.py
 

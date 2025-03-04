@@ -11,27 +11,31 @@ from win32api import GetSystemMetrics
 
 class SystemService:
     @staticmethod
+    def _run_command(command):
+        return subprocess.check_output(command, creationflags=subprocess.CREATE_NO_WINDOW).decode()
+
+    @staticmethod
     def get_windows_edition():
-        return subprocess.check_output("wmic os get Caption").decode().split("\n")[1].strip().replace("Microsoft ", "")
+        return SystemService._run_command("wmic os get Caption").split("\n")[1].strip().replace("Microsoft ", "")
 
     @staticmethod
     def get_processor_info():
-        return subprocess.check_output("wmic cpu get name").decode().split("\n")[1].strip()
+        return SystemService._run_command("wmic cpu get name").split("\n")[1].strip()
 
     @staticmethod
     def get_architecture():
-        return subprocess.check_output("wmic os get osarchitecture").decode().split("\n")[1].strip()
+        return SystemService._run_command("wmic os get osarchitecture").split("\n")[1].strip()
 
     @staticmethod
     def get_gpu_info():
-        output = subprocess.check_output("wmic path win32_VideoController get name").decode()
+        output = SystemService._run_command("wmic path win32_VideoController get name")
         return [line.strip() for line in output.split("\n") if line.strip() and "name" not in line.lower()]
 
     @staticmethod
     def get_antivirus_info():
         try:
             cmd = "wmic /node:localhost /namespace:\\\\root\\SecurityCenter2 path AntiVirusProduct get displayName"
-            output = subprocess.check_output(cmd).decode()
+            output = SystemService._run_command(cmd)
             antiviruses = [line.strip() for line in output.split("\n") if line.strip() and "displayname" not in line.lower()]
         except Exception:
             return ["N/A"]
@@ -40,13 +44,13 @@ class SystemService:
 
     @staticmethod
     def get_firewall_info():
-        output = subprocess.check_output("netsh advfirewall show allprofiles state").decode()
+        output = SystemService._run_command("netsh advfirewall show allprofiles state")
         return "Enabled" if "ON" in output else "Disabled"
 
     @staticmethod
     def get_cpu_details():
         cmd = "wmic cpu get NumberOfCores,NumberOfLogicalProcessors,MaxClockSpeed,CurrentClockSpeed /format:value"
-        output = subprocess.check_output(cmd).decode()
+        output = SystemService._run_command(cmd)
         details = dict(line.split("=", 1) for line in output.splitlines() if "=" in line)
 
         return {
@@ -58,7 +62,7 @@ class SystemService:
 
     @staticmethod
     def get_disk_info():
-        output = subprocess.check_output("wmic diskdrive get Model,Size").decode()
+        output = SystemService._run_command("wmic diskdrive get Model,Size")
         disks = []
         for line in output.splitlines():
             if "Model" not in line and line.strip():
@@ -72,7 +76,7 @@ class SystemService:
     @staticmethod
     def get_battery_info():
         cmd = "wmic path win32_battery get BatteryStatus,EstimatedChargeRemaining"
-        output = subprocess.check_output(cmd).decode()
+        output = SystemService._run_command(cmd)
         lines = [line for line in output.splitlines() if line.strip() and "BatteryStatus" not in line]
         if lines:
             status, charge = lines[0].split()

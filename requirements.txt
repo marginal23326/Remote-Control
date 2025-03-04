@@ -2,12 +2,13 @@ dxcam
 Flask
 Flask_Login
 Flask_SocketIO
-opencv_contrib_python
-opencv_contrib_python_headless
-opencv_python
 opencv_python_headless
 python_engineio
 psutil
 PyAudio
+pyperclip
+pywinpty
+pyinstaller
 pywin32
+Requests
 Werkzeug

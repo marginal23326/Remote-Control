@@ -16,7 +16,7 @@ def register_audio_events(socketio, audio_manager):
 
     @socketio.on("start_client_audio")
     @login_required
-    def handle_start_client_audio():
+    def handle_start_client_audio(data):
         audio_manager.start_stream(request.sid, "client_playback")
 
     @socketio.on("stop_client_audio")

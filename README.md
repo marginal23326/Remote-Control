@@ -82,7 +82,6 @@ Remote-Control/
 │   ├── system_routes.py       # System info
 │   └── task_routes.py         # Task manager routes
 ├── services/
-│   ├── file_service.py        # File operations functions
 │   └── system_service.py      # System information functions
 ├── static/
 │   ├── css/

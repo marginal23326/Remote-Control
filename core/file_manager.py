@@ -19,7 +19,7 @@ class FileManager:
     def check_dir_access(self, path):
         try:
             os.listdir(path)
-        except (PermissionError, FileNotFoundError, OSError):
+        except Exception:
             return False
         else:
             return True

@@ -4,7 +4,6 @@ import sys
 from app import create_app
 from config.auth_config import USER_CONFIG, save_user_config
 from extensions import socketio
-from services.system_service import SystemService
 
 
 def prompt_for_credentials():
@@ -39,16 +38,10 @@ if __name__ == "__main__":
         sys.exit(1)
 
     port = int(sys.argv[1])
-    local_ip = SystemService.get_lan_ip()
 
     app = create_app()
 
-    print("\n=== Enhanced Remote Control Web Server ===")
-    print("\nServer started on:")
-    print(f"  Local IP: {local_ip}")
-    print(f"  Port: {port}")
-    print("\nAccess the control panel from your browser:")
-    print(f"  http://{local_ip}:{port}")
+    print("\n=== Remote Control Web Server ===")
     print("\nPress Ctrl+C to stop the server\n")
 
     socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)

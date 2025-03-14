@@ -8,6 +8,7 @@ from core.file_manager import FileManager
 from core.input_manager import InputManager
 from core.shell_manager import ShellManager
 from core.stream_manager import StreamManager
+from core.system_manager import SystemManager
 from core.task_manager import TaskManager
 from events import register_events
 from extensions import init_app, socketio
@@ -33,6 +34,7 @@ def create_app():
     shell_manager = ShellManager()
     file_manager = FileManager()
     task_manager = TaskManager()
+    system_manager = SystemManager()
 
     app.input_manager = input_manager
     app.audio_manager = audio_manager
@@ -40,6 +42,7 @@ def create_app():
     app.shell_manager = shell_manager
     app.file_manager = file_manager
     app.task_manager = task_manager
+    app.system_manager = system_manager
 
     # Register blueprints
     app.register_blueprint(auth_routes.bp)

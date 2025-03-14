@@ -64,6 +64,7 @@ Remote-Control/
 │   ├── mouse_controller.py    # Windows-specific mouse control
 │   ├── shell_manager.py       # ShellManager class
 │   ├── stream_manager.py      # StreamManager class
+│   ├── system_manager.py      # SystemManager class
 │   └── task_manager.py        # TaskManager class
 ├── events/
 │   ├── __init__.py
@@ -81,8 +82,6 @@ Remote-Control/
 │   ├── stream_routes.py       # Streaming related routes
 │   ├── system_routes.py       # System info
 │   └── task_routes.py         # Task manager routes
-├── services/
-│   └── system_service.py      # System information functions
 ├── static/
 │   ├── css/
 │   │   ├── styles.css

@@ -30,7 +30,6 @@ export class InteractiveShell {
         this.fitAddon = new window.FitAddon.FitAddon();
         this.terminal.loadAddon(this.fitAddon);
         this.terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
-        this.terminal.loadAddon(new window.SearchAddon.SearchAddon());
 
         this.isSelectionMode = false;
         this.longPressTimeout = null;

@@ -133,7 +133,7 @@ cython_debug/
 .pypirc
 server_supervisor.c
 server_supervisor.exe
-/node_modules
+node_modules/
 _TODO.txt
 user_config.json
 *.zip

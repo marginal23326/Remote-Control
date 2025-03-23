@@ -7,24 +7,15 @@ export class InteractiveShell {
         this.socket = io();
         this.isStarted = false;
 
-        this.currentFontSize = 14;
-        this.minFontSize = 8;
-        this.maxFontSize = 32;
-
         this.terminal = new Terminal({
             cursorStyle: 'bar',
             cursorInactiveStyle: 'none',
             cursorBlink: true,
-            theme: {
-                background: '#1a1b26',
-                foreground: '#a9b1d6',
-                cursor: '#c0caf5'
+            windowsPty: {
+                backend: 'conpty'
             },
-            fontSize: this.currentFontSize,
             fontFamily: 'Consolas, monospace',
-            scrollback: 10000,
-            convertEol: true,
-            disableStdin: true
+            scrollback: 10000
         });
 
         this.fitAddon = new window.FitAddon.FitAddon();
@@ -69,36 +60,13 @@ export class InteractiveShell {
         // Open terminal
         this.terminal.open(terminalElement);
 
-        // Apply styles to prevent text wrapping
-        const xtermViewport = terminalElement.querySelector('.xterm-viewport');
-        if (xtermViewport) {
-            xtermViewport.style.overflowY = 'auto';
-        }
-
-        const xtermScreen = terminalElement.querySelector('.xterm-screen');
-        if (xtermScreen) {
-            xtermScreen.style.width = '100%';
-            xtermScreen.style.height = '100%';
-        }
-
-        // Initial fit with a small delay to ensure proper rendering
+        // Initial fit
         setTimeout(() => {
             this.fitAddon.fit();
             this.updateTerminalSize();
         }, 100);
 
-        terminalElement.addEventListener('contextmenu', async (e) => {
-            if (!this.isStarted) return;
-            e.preventDefault();
-
-            if (this.terminal.hasSelection()) {
-                await this.copySelectedText(true);
-            } else {
-                await this.pasteText();
-            }
-        });
-
-        // Add resize observer
+        // Resize handling
         const resizeObserver = new ResizeObserver(() => {
             if (this.isStarted) {
                 this.fitAddon.fit();
@@ -107,7 +75,6 @@ export class InteractiveShell {
         });
         resizeObserver.observe(terminalElement);
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             if (this.isStarted) {
                 this.fitAddon.fit();
@@ -115,20 +82,9 @@ export class InteractiveShell {
             }
         });
 
-        // Improve text selection handling
-        terminalElement.addEventListener('mousedown', (e) => {
-            if (!this.isStarted) return;
-            const xtermSelection = terminalElement.querySelector('.xterm-selection');
-            if (xtermSelection) {
-                xtermSelection.style.pointerEvents = 'auto';
-                xtermSelection.style.userSelect = 'text';
-            }
-        });
-
-        // Add wheel event listener for font size control
+        // Font size adjustment with Ctrl+Wheel
         terminalElement.addEventListener('wheel', (e) => {
-            if (!this.isStarted) return;
-            if (e.ctrlKey) {
+            if (this.isStarted && e.ctrlKey) {
                 e.preventDefault();
                 this.adjustFontSize(e.deltaY < 0 ? 1 : -1);
             }
@@ -138,21 +94,18 @@ export class InteractiveShell {
         const xtermElement = terminalElement.querySelector('.xterm');
         if (xtermElement) {
             xtermElement.style.padding = '8px';
-            xtermElement.style.height = '100%';
-            xtermElement.style.width = '100%';
-            xtermElement.style.position = 'relative';
         }
     }
 
     adjustFontSize(delta) {
         if (!this.isStarted) return;
 
-        const newSize = Math.max(this.minFontSize,
-            Math.min(this.maxFontSize,
-            this.currentFontSize + delta));
+        const currentFontSize = this.terminal.options.fontSize;
+        const minFontSize = 8;
+        const maxFontSize = 32;
+        const newSize = Math.max(minFontSize, Math.min(maxFontSize, currentFontSize + delta));
 
-        if (newSize !== this.currentFontSize) {
-            this.currentFontSize = newSize;
+        if (newSize !== currentFontSize) {
             this.terminal.options.fontSize = newSize;
             this.fitAddon.fit();
             this.updateTerminalSize();
@@ -181,7 +134,6 @@ export class InteractiveShell {
                 startButton.classList.add('hidden');
                 restartButton.classList.remove('hidden');
                 terminalContainer.style.opacity = '1';
-                this.terminal.options.disableStdin = false;
                 await this.createShellSession();
                 this.fitAddon.fit();
             }
@@ -207,18 +159,30 @@ export class InteractiveShell {
         this.terminal.attachCustomKeyEventHandler((event) => {
             if (event.type !== 'keydown') return true;
 
-            if (event.ctrlKey && event.key === 'c') {
-                if (this.terminal.hasSelection()) {
+            if (event.ctrlKey && ((event.key === 'c' && this.terminal.hasSelection()) || event.key === 'v')) {
+                if (event.key === 'c') {
                     setTimeout(() => this.terminal.clearSelection(), 0);
-                    return false;
                 }
-            }
-
-            if (event.ctrlKey && event.key === 'v') {
                 return false;
             }
 
             return true;
+        });
+
+        terminalContainer.addEventListener('contextmenu', (e) => {
+            if (!this.isStarted) return;
+            e.preventDefault();
+            
+            if (this.terminal.hasSelection()) {
+                navigator.clipboard.writeText(this.terminal.getSelection());
+                this.terminal.clearSelection();
+            } else {
+                navigator.clipboard.readText().then(text => {
+                    if (text && this.isStarted) {
+                        this.terminal.paste(text);
+                    }
+                });
+            }
         });
 
         document.addEventListener('keydown', (e) => {
@@ -232,32 +196,12 @@ export class InteractiveShell {
             }
         });
 
-        // Start output polling only when shell is active
+        // Start output polling
         setInterval(() => {
             if (this.sessionId && this.isStarted) {
                 this.socket.emit('shell_poll', { session_id: this.sessionId });
             }
         }, 100);
-    }
-
-    async copySelectedText(isRightClick = false) {
-        if (this.terminal.hasSelection()) {
-            if (isRightClick) {
-                const text = this.terminal.getSelection();
-                await navigator.clipboard.writeText(text);
-            }
-            this.terminal.clearSelection();
-        }
-    }
-
-    async pasteText() {
-        const text = await navigator.clipboard.readText();
-        if (text && this.sessionId && this.isStarted) {
-            this.socket.emit('shell_input', {
-                session_id: this.sessionId,
-                command: text
-            });
-        }
     }
 
     async restartShell() {

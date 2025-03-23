@@ -2,7 +2,7 @@
 import queue
 import threading
 
-from winpty import PtyProcess
+from winpty import Backend, PtyProcess
 
 
 class ShellManager:
@@ -12,7 +12,7 @@ class ShellManager:
 
     def create_session(self, session_id, cols=80, rows=24):
         try:
-            pty = PtyProcess.spawn("cmd.exe", cwd="C:\\", dimensions=(rows, cols))
+            pty = PtyProcess.spawn("cmd.exe", cwd="C:\\", dimensions=(rows, cols), backend=Backend.ConPTY)
             self.shells[session_id] = {"pty": pty, "cwd": "C:\\"}
 
             self.output_queues[session_id] = queue.Queue()

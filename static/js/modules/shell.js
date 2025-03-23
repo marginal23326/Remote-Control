@@ -31,10 +31,6 @@ export class InteractiveShell {
         this.terminal.loadAddon(this.fitAddon);
         this.terminal.loadAddon(new window.WebLinksAddon.WebLinksAddon());
 
-        this.isSelectionMode = false;
-        this.longPressTimeout = null;
-        this.longPressDuration = 500; // ms
-
         this.initializeTerminal();
         this.setupEventHandlers();
     }
@@ -268,7 +264,6 @@ export class InteractiveShell {
         if (!this.isStarted) return;
 
         this.terminal.clear();
-        this.terminal.writeln('\r\n\x1b[33mRestarting shell session...\x1b[0m');
         await this.createShellSession();
     }
 
@@ -283,7 +278,6 @@ export class InteractiveShell {
         const data = await response.json();
         if (data.status === 'success') {
             this.sessionId = data.session_id;
-            this.terminal.writeln('Interactive shell session started.');
             this.updateTerminalSize();
         } else {
             this.terminal.writeln('\r\n\x1b[31mFailed to start shell session.\x1b[0m');

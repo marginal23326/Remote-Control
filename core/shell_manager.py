@@ -31,6 +31,8 @@ class ShellManager:
             while session_id in self.shells:
                 data = pty.read()
                 if data:
+                    if "Microsoft Windows" in data:
+                        data = data.replace("\r\n" * 3, "", 1)
                     self.output_queues[session_id].put(data)
         except EOFError:
             print(f"Console for {session_id} closed.")

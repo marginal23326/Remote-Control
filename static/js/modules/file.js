@@ -32,7 +32,7 @@ class FileManager extends BaseFileManager {
             uploadFile: 'Uploading...',
             refresh: 'Refreshing...'
         };
-        
+
         this.buttons = Object.fromEntries(
             Object.entries(buttonConfigs)
                 .map(([id, loadingText]) => {
@@ -50,25 +50,23 @@ class FileManager extends BaseFileManager {
         if (!files.length) return;
 
         const formData = new FormData();
-        Array.from(files).forEach(file => formData.append('files', file));
+        Array.from(files).forEach((file) => formData.append('files', file));
         formData.append('path', this.currentPath);
 
         if (isDropZone) this.dropZone.setLoading();
 
         try {
-            await this.handleApiCall('/api/upload', 'POST', formData, 
-                async () => {
-                    const lastFile = files[files.length - 1].name;
-                    const highlightPath = `${this.currentPath}${this.currentPath.endsWith('\\') ? '' : '\\'}${lastFile}`;
-                    await this.listFiles(this.currentPath, highlightPath);
-                    
-                    if (!isDropZone) {
-                        const fileInput = document.getElementById('fileUpload');
-                        fileInput.value = '';
-                        document.getElementById('selectedFileName').textContent = 'No file chosen';
-                    }
+            await this.handleApiCall('/api/upload', 'POST', formData, async () => {
+                const lastFile = files[files.length - 1].name;
+                const highlightPath = `${this.currentPath}${this.currentPath.endsWith('\\') ? '' : '\\'}${lastFile}`;
+                await this.listFiles(this.currentPath, highlightPath);
+
+                if (!isDropZone) {
+                    const fileInput = document.getElementById('fileUpload');
+                    fileInput.value = '';
+                    document.getElementById('selectedFileName').textContent = 'No file chosen';
                 }
-            );
+            });
         } finally {
             if (isDropZone) this.dropZone.reset();
         }
@@ -92,13 +90,13 @@ class FileManager extends BaseFileManager {
     createTableRow(item, additionalClasses = []) {
         const row = document.createElement('tr');
         row.classList.add(...CLASSES.row, ...additionalClasses, CLASSES.defaultHover);
-        
+
         if (item) {
             row.dataset.path = item.path;
             row.dataset.isDir = item.is_dir.toString();
         }
 
-        ['mouseover', 'mouseout'].forEach(event => {
+        ['mouseover', 'mouseout'].forEach((event) => {
             row.addEventListener(event, () => {
                 row.dataset.hovered = event === 'mouseover';
                 this.selectionManager.updateItemHover(row);
@@ -118,8 +116,8 @@ class FileManager extends BaseFileManager {
 
     updateFileOperationsUI() {
         const selectionCount = this.selectionManager.selectedItems.size;
-        const hasDirectorySelected = Array.from(this.selectionManager.selectedItems).some(item => 
-            item.dataset.isDir === 'true'
+        const hasDirectorySelected = Array.from(this.selectionManager.selectedItems).some(
+            (item) => item.dataset.isDir === 'true'
         );
 
         const elements = {
@@ -131,7 +129,7 @@ class FileManager extends BaseFileManager {
         };
 
         elements.operations.classList.toggle('hidden', !selectionCount);
-        
+
         elements.download.disabled = !selectionCount || hasDirectorySelected;
         elements.delete.disabled = !selectionCount;
         elements.renameInput.disabled = selectionCount !== 1;
@@ -139,7 +137,8 @@ class FileManager extends BaseFileManager {
 
         if (selectionCount === 1) {
             elements.renameInput.value = Array.from(this.selectionManager.selectedItems)[0]
-                .querySelector('td:first-child > div').textContent.trim();
+                .querySelector('td:first-child > div')
+                .textContent.trim();
         } else {
             elements.renameInput.value = '';
         }
@@ -148,26 +147,23 @@ class FileManager extends BaseFileManager {
     createUpDirectoryRow(path, onClick) {
         const upRow = this.createTableRow();
         upRow.addEventListener('click', onClick);
-        upRow.appendChild(this.createCell(
-            `<div class="flex items-center gap-2">${SVG_TEMPLATES.upArrow()}..</div>`,
-            3
-        ));
+        upRow.appendChild(
+            this.createCell(`<div class="flex items-center gap-2">${SVG_TEMPLATES.upArrow()}..</div>`, 3)
+        );
         return upRow;
     }
 
     async updateFileList(items, highlightPath = null) {
         const fragment = document.createDocumentFragment();
-        
+
         if (this.currentPath !== '/') {
-            const upRow = this.createUpDirectoryRow(this.currentPath, () => 
-                this.listFiles(this.getParentPath())
-            );
+            const upRow = this.createUpDirectoryRow(this.currentPath, () => this.listFiles(this.getParentPath()));
             fragment.appendChild(upRow);
         }
 
-        items.forEach(item => {
+        items.forEach((item) => {
             const row = this.createTableRow(item, item.no_access ? CLASSES.noAccess : []);
-            
+
             if (item.is_dir && !item.no_access) {
                 row.addEventListener('dblclick', () => this.listFiles(item.path));
             }
@@ -177,13 +173,10 @@ class FileManager extends BaseFileManager {
             if (item.is_dir) {
                 cells.push('-', '-');
             } else {
-                cells.push(
-                    formatFileSize(item.size), 
-                    item.last_modified ? formatDate(item.last_modified) : '-'
-                );
+                cells.push(formatFileSize(item.size), item.last_modified ? formatDate(item.last_modified) : '-');
             }
 
-            cells.forEach(content => row.appendChild(this.createCell(content)));
+            cells.forEach((content) => row.appendChild(this.createCell(content)));
 
             if (highlightPath && item.path === highlightPath) {
                 row.classList.add(CLASSES.highlight);
@@ -195,7 +188,7 @@ class FileManager extends BaseFileManager {
 
         this.elements.fileList.innerHTML = '';
         this.elements.fileList.appendChild(fragment);
-        
+
         this.currentFileList = items;
         this.filteredRows.clear();
         this.filterFiles('');
@@ -205,13 +198,13 @@ class FileManager extends BaseFileManager {
         const normalizedSearch = searchTerm.toLowerCase();
         if (!this.filteredRows.has(normalizedSearch)) {
             const visibilityMap = new Map();
-            this.elements.fileList.querySelectorAll('tr[data-path]').forEach(row => {
+            this.elements.fileList.querySelectorAll('tr[data-path]').forEach((row) => {
                 const fileName = row.querySelector('td:first-child > div').textContent.toLowerCase();
                 visibilityMap.set(row, fileName.includes(normalizedSearch));
             });
             this.filteredRows.set(normalizedSearch, visibilityMap);
         }
-        
+
         const visibilityMap = this.filteredRows.get(normalizedSearch);
         visibilityMap.forEach((isVisible, row) => {
             row.style.display = isVisible ? '' : 'none';
@@ -233,21 +226,18 @@ class FileManager extends BaseFileManager {
     async listFiles(path, highlightPath = null) {
         this.clearSelection();
         const fileList = document.getElementById('fileList');
-        
+
         if (path !== this.currentPath) {
             fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-400">Loading...</td></tr>`;
         }
 
         try {
             const response = await apiCall(`/api/files?path=${encodeURIComponent(path)}`);
-            
+
             if (response.status === 'error') {
                 fileList.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">${response.message}</td></tr>`;
                 if (response.no_access && path !== '/') {
-                    const upRow = this.createUpDirectoryRow(
-                        path,
-                        () => this.listFiles(this.getParentPath())
-                    );
+                    const upRow = this.createUpDirectoryRow(path, () => this.listFiles(this.getParentPath()));
                     fileList.appendChild(upRow);
                 }
                 return;
@@ -265,20 +255,20 @@ class FileManager extends BaseFileManager {
     }
 
     async handleDownload(selectedItems) {
-        const selectedFiles = selectedItems.filter(item => item.dataset.isDir !== 'true');
+        const selectedFiles = selectedItems.filter((item) => item.dataset.isDir !== 'true');
         if (selectedFiles.length === 0) return;
 
-        const paths = selectedFiles.map(item => item.dataset.path);
-        const queryString = paths.map(path => `paths[]=${encodeURIComponent(path)}`).join('&');
+        const paths = selectedFiles.map((item) => item.dataset.path);
+        const queryString = paths.map((path) => `paths[]=${encodeURIComponent(path)}`).join('&');
         const url = `/api/download?${queryString}`;
         const response = await fetch(url);
-        
+
         if (response.ok) {
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
             iframe.src = url;
-            
+
             setTimeout(() => {
                 document.body.removeChild(iframe);
             }, 5000);
@@ -289,23 +279,21 @@ class FileManager extends BaseFileManager {
     }
 
     async handleDelete(selectedItems) {
-        const paths = selectedItems.map(item => item.dataset.path);
+        const paths = selectedItems.map((item) => item.dataset.path);
         const confirmMessage = paths.length === 1 
             ? `Are you sure you want to delete ${paths[0]}?`
             : `Are you sure you want to delete ${paths.length} items?`;
 
         if (!confirm(confirmMessage)) return;
 
-        await this.handleApiCall('/api/delete', 'POST', { paths }, 
-            async response => {
-                if (response.data?.failed?.length) {
-                    alert(`Some items failed to delete:\n${response.data.failed
+        await this.handleApiCall('/api/delete', 'POST', { paths }, async (response) => {
+            if (response.data?.failed?.length) {
+                alert(`Some items failed to delete:\n${response.data.failed
                         .map(f => `${f.path}: ${f.error}`).join('\n')}`);
-                }
-                await this.listFiles(this.currentPath);
-                this.clearSelection();
             }
-        );
+            await this.listFiles(this.currentPath);
+            this.clearSelection();
+        });
     }
 
     initializeEventListeners() {
@@ -361,13 +349,13 @@ class FileManager extends BaseFileManager {
                 }
 
                 await this.handleApiCall(
-                    '/api/create_folder', 
-                    'POST', 
+                    '/api/create_folder',
+                    'POST',
                     { parentPath: this.currentPath, folderName },
                     async () => {
-                        const newFolderPath = this.currentPath.endsWith('\\') ? 
-                            `${this.currentPath}${folderName}` : 
-                            `${this.currentPath}\\${folderName}`;
+                        const newFolderPath = this.currentPath.endsWith('\\')
+                            ? `${this.currentPath}${folderName}`
+                            : `${this.currentPath}\\${folderName}`;
                         await this.listFiles(this.currentPath, newFolderPath);
                         if (folderNameInput) folderNameInput.value = '';
                     }
@@ -382,37 +370,31 @@ class FileManager extends BaseFileManager {
                 const oldPath = selectedItem.dataset.path;
                 const renameInput = document.getElementById('renameInput');
                 const newName = renameInput?.value.trim();
-                
+
                 if (!newName) {
                     alert('Please enter a new name');
                     return;
                 }
 
-                await this.handleApiCall(
-                    '/api/rename',
-                    'POST',
-                    { oldPath, newName },
-                    async () => {
-                        const newPath = this.currentPath.endsWith('\\') ?
-                            `${this.currentPath}${newName}` :
-                            `${this.currentPath}\\${newName}`;
-                        await this.listFiles(this.currentPath, newPath);
-                        document.getElementById('fileOperations')?.classList.add('hidden');
-                        this.clearSelection();
-                        if (renameInput) renameInput.value = '';
-                    }
-                );
+                await this.handleApiCall('/api/rename', 'POST', { oldPath, newName }, async () => {
+                    const newPath = this.currentPath.endsWith('\\')
+                        ? `${this.currentPath}${newName}`
+                        : `${this.currentPath}\\${newName}`;
+                    await this.listFiles(this.currentPath, newPath);
+                    document.getElementById('fileOperations')?.classList.add('hidden');
+                    this.clearSelection();
+                    if (renameInput) renameInput.value = '';
+                });
             })
         );
 
         // File selection display
-        document.getElementById('fileUpload')?.addEventListener('change', function() {
+        document.getElementById('fileUpload')?.addEventListener('change', function () {
             const selectedFileName = document.getElementById('selectedFileName');
             if (!selectedFileName) return;
 
-            selectedFileName.textContent = this.files.length > 1 ? 
-                `${this.files.length} files selected` : 
-                this.files[0]?.name || 'No file chosen';
+            selectedFileName.textContent =
+                this.files.length > 1 ? `${this.files.length} files selected` : this.files[0]?.name || 'No file chosen';
             selectedFileName.classList.toggle('text-gray-400', this.files.length === 0);
             selectedFileName.classList.toggle('text-green-400', this.files.length > 0);
         });
@@ -453,26 +435,20 @@ class DropZone {
     }
 
     setupEventListeners() {
-        const preventDefault = e => {
+        const preventDefault = (e) => {
             e.preventDefault();
             e.stopPropagation();
         };
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => 
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((event) =>
             this.element.addEventListener(event, preventDefault)
         );
 
-        ['dragenter', 'dragover'].forEach(event => 
-            this.element.addEventListener(event, () => this.highlight())
-        );
+        ['dragenter', 'dragover'].forEach((event) => this.element.addEventListener(event, () => this.highlight()));
 
-        ['dragleave', 'drop'].forEach(event => 
-            this.element.addEventListener(event, () => this.unhighlight())
-        );
+        ['dragleave', 'drop'].forEach((event) => this.element.addEventListener(event, () => this.unhighlight()));
 
-        this.element.addEventListener('drop', e => 
-            this.onUpload(e.dataTransfer.files, true)
-        );
+        this.element.addEventListener('drop', (e) => this.onUpload(e.dataTransfer.files, true));
     }
 
     highlight() {

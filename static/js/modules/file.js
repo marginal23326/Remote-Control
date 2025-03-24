@@ -56,25 +56,19 @@ class FileManager extends BaseFileManager {
         if (isDropZone) this.dropZone.setLoading();
 
         try {
-            const response = await apiCall('/api/upload', 'POST', formData);
-            if (response.status === 'success') {
-                const lastFile = files[files.length - 1].name;
-                const highlightPath = `${this.currentPath}${this.currentPath.endsWith('\\') ? '' : '\\'}${lastFile}`;
-                await this.listFiles(this.currentPath, highlightPath);
-                
-                if (!isDropZone) {
-                    const fileInput = document.getElementById('fileUpload');
-                    fileInput.value = '';
-                    document.getElementById('selectedFileName').textContent = 'No file chosen';
+            await this.handleApiCall('/api/upload', 'POST', formData, 
+                async () => {
+                    const lastFile = files[files.length - 1].name;
+                    const highlightPath = `${this.currentPath}${this.currentPath.endsWith('\\') ? '' : '\\'}${lastFile}`;
+                    await this.listFiles(this.currentPath, highlightPath);
+                    
+                    if (!isDropZone) {
+                        const fileInput = document.getElementById('fileUpload');
+                        fileInput.value = '';
+                        document.getElementById('selectedFileName').textContent = 'No file chosen';
+                    }
                 }
-                
-                alert(response.message);
-            } else {
-                alert(response.message);
-            }
-        } catch (error) {
-            console.error('Error uploading files:', error);
-            alert('Error uploading files');
+            );
         } finally {
             if (isDropZone) this.dropZone.reset();
         }
@@ -272,35 +266,25 @@ class FileManager extends BaseFileManager {
 
     async handleDownload(selectedItems) {
         const selectedFiles = selectedItems.filter(item => item.dataset.isDir !== 'true');
-        if (selectedFiles.length === 0) {
-            alert('Please select at least one file to download (directories cannot be downloaded)');
-            return;
-        }
+        if (selectedFiles.length === 0) return;
 
-        try {
-            const paths = selectedFiles.map(item => item.dataset.path);
-            const queryString = paths.map(path => `paths[]=${encodeURIComponent(path)}`).join('&');
+        const paths = selectedFiles.map(item => item.dataset.path);
+        const queryString = paths.map(path => `paths[]=${encodeURIComponent(path)}`).join('&');
+        const url = `/api/download?${queryString}`;
+        const response = await fetch(url);
+        
+        if (response.ok) {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            iframe.src = url;
             
-            const response = await fetch(`/api/download?${queryString}`);
-            
-            if (response.ok) {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                iframe.src = `/api/download?${queryString}`;
-                
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                }, 5000);
-            } else if (response.status === 403) {
-                alert('Access denied: You do not have permission to download these files');
-            } else {
-                alert('Error downloading files');
-            }
-
-        } catch (error) {
-            console.error('Error downloading files:', error);
-            alert('Error downloading files');
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 5000);
+        } else {
+            const errorData = await response.json();
+            alert(errorData.message || 'Error downloading files');
         }
     }
 

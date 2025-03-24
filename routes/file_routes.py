@@ -12,7 +12,7 @@ def handle_errors(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            return jsonify({"status": "error", "message": str(e)})
+            return jsonify({"status": "error", "message": str(e)}), 500
 
     return wrapper
 
@@ -42,17 +42,13 @@ def list_files():
 @handle_errors
 def download_file():
     paths = request.args.getlist("paths[]")
-
-    try:
-        with current_app.file_manager.prepare_download(paths) as (file_path, filename):
-            return send_from_directory(
-                Path(file_path).parent,
-                Path(file_path).name,
-                as_attachment=True,
-                download_name=filename,
-            )
-    except PermissionError:
-        return "Access denied", 403
+    with current_app.file_manager.prepare_download(paths) as (file_path, filename):
+        return send_from_directory(
+            Path(file_path).parent,
+            Path(file_path).name,
+            as_attachment=True,
+            download_name=filename,
+        )
 
 @bp.route("/api/upload", methods=["POST"])
 @login_required
